@@ -1,0 +1,97 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth()       { return request.auth != null; }
+    function role()         { return isAuth() && request.auth.token.role != null ? request.auth.token.role : 'anon'; }
+    function isStaff()      { return role() == 'staff' || role() == 'admin'; }
+    function isAdmin()      { return role() == 'admin'; }
+    function isOwner(uid)   { return isAuth() && request.auth.uid == uid; }
+
+    // ============ CATÁLOGO PÚBLICO ============
+    match /products/{id} {
+      allow read:  if true;
+      allow write: if isAdmin();
+      match /images/{img} {
+        allow read:  if true;
+        allow write: if isAdmin();
+      }
+    }
+    match /categories/{id}    { allow read: if true; allow write: if isAdmin(); }
+    match /subcategories/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /materials/{id}     { allow read: if true; allow write: if isAdmin(); }
+    match /tags/{id}          { allow read: if true; allow write: if isAdmin(); }
+    match /discounts/{id}     { allow read: if true; allow write: if isAdmin(); }
+    match /aiEntries/{id}     { allow read: if true; allow write: if isAdmin(); }
+    match /siteContent/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /config/{id}        { allow read: if true; allow write: if isAdmin(); }
+    match /complaintTypes/{id} { allow read: if true; allow write: if isAdmin(); }
+
+    // ============ SOLO STAFF ============
+    match /gallery/{id}       { allow read, write: if isStaff(); }
+    match /aiPrompts/{id} {
+      allow read:  if isStaff();
+      allow write: if isAdmin();
+    }
+
+    // ============ USUARIO ============
+    match /users/{uid} {
+      allow read:  if isOwner(uid) || isStaff();
+      allow write: if isOwner(uid) || isAdmin();
+
+      match /addresses/{aid}    { allow read, write: if isOwner(uid); }
+      match /favorites/{pid}    { allow read, write: if isOwner(uid); }
+      match /aiGenerations/{gid} {
+        allow read:  if isOwner(uid) || isStaff();
+        allow write: if false;   // solo escribe Cloud Functions
+      }
+    }
+
+    // ============ CARRITOS ============
+    // cartId = uid del cliente logueado. Invitados manejan cart en localStorage.
+    match /carts/{cartId} {
+      allow read, write: if isAuth() && (request.auth.uid == cartId || isStaff());
+    }
+
+    // ============ ÓRDENES (solo CF escribe) ============
+    match /orders/{id} {
+      allow read:  if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+
+      match /events/{eid} {
+        allow read:  if isStaff() ||
+                        (isAuth() && get(/databases/$(database)/documents/orders/$(id)).data.userId == request.auth.uid);
+        allow write: if false;
+      }
+    }
+
+    // ============ CHAT ============
+    match /chats/{id} {
+      allow read, write: if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
+
+      match /messages/{mid} {
+        allow read, write: if isStaff() ||
+                              (isAuth() && get(/databases/$(database)/documents/chats/$(id)).data.userId == request.auth.uid);
+      }
+    }
+
+    // ============ QUEJAS ============
+    match /complaints/{id} {
+      allow read:   if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow create: if isAuth();
+      allow update, delete: if isStaff();
+    }
+
+    // ============ COUNTERS (solo CF) ============
+    match /counters/{name} {
+      allow read:  if isStaff();
+      allow write: if false;
+    }
+
+    // ============ DENY POR DEFECTO ============
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

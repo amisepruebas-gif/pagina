@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuth()     { return request.auth != null; }
+    function role()       { return isAuth() && request.auth.token.role != null ? request.auth.token.role : 'anon'; }
+    function isStaff()    { return role() == 'staff' || role() == 'admin'; }
+    function isAdmin()    { return role() == 'admin'; }
+    function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
+
+    match /products/{productId}/{path=**} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    match /gallery/{path=**} {
+      allow read, write: if isStaff();
+    }
+
+    match /ai-entries/{path=**} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    match /site/{path=**} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{uid}/{path=**} {
+      allow read:  if isOwner(uid) || isStaff();
+      allow write: if isOwner(uid);
+    }
+
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
