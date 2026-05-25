@@ -9,13 +9,14 @@ import {
   describeAuthError
 } from '@/lib/auth';
 import { Button, Icon, Input } from '@/components/ui';
+import type { AuthPanelConfig } from '@/types/auth-panel';
 import { AuthLayout } from './AuthLayout';
 import { GoogleButton } from './GoogleButton';
 import { OrSeparator } from './OrSeparator';
 import { PasswordInput } from './PasswordInput';
 import { PasswordStrength } from './PasswordStrength';
 
-export default function RegisterForm() {
+export default function RegisterForm({ panel }: { panel?: AuthPanelConfig }) {
   const router = useRouter();
   const params = useSearchParams();
   const [displayName, setDisplayName] = useState('');
@@ -65,6 +66,7 @@ export default function RegisterForm() {
 
   return (
     <AuthLayout
+      panel={panel}
       title="Crea tu cuenta"
       subtitle="Te tomará menos de un minuto. Sin spam, cancela cuando quieras."
       footer={

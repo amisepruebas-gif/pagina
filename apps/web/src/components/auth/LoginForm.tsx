@@ -5,12 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { loginWithEmail, loginWithGoogle, describeAuthError } from '@/lib/auth';
 import { Button, Icon, Input } from '@/components/ui';
+import type { AuthPanelConfig } from '@/types/auth-panel';
 import { AuthLayout } from './AuthLayout';
 import { GoogleButton } from './GoogleButton';
 import { OrSeparator } from './OrSeparator';
 import { PasswordInput } from './PasswordInput';
 
-export default function LoginForm() {
+export default function LoginForm({ panel }: { panel?: AuthPanelConfig }) {
   const router = useRouter();
   const params = useSearchParams();
   const rawNext = params.get('next');
@@ -59,6 +60,7 @@ export default function LoginForm() {
 
   return (
     <AuthLayout
+      panel={panel}
       title="Bienvenido de vuelta"
       subtitle="Inicia sesión para acceder a tus pedidos, favoritos y direcciones."
       footer={

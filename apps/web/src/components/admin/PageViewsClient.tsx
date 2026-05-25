@@ -31,7 +31,7 @@ function normalize(id: string, data: DocumentData): PageView {
   };
 }
 
-type Panel = 'inicial' | 'creadas';
+type Panel = 'inicial' | 'inicio-sesion' | 'creadas';
 
 export default function PageViewsClient() {
   const { user } = useAuth();
@@ -123,18 +123,32 @@ export default function PageViewsClient() {
       {/* Barra: pestaña navegador + acciones */}
       <div className="px-6 pt-5">
         <div className="flex items-end justify-between gap-3 border-b border-border">
-          <button
-            type="button"
-            onClick={() => setPanel('inicial')}
-            className={`relative -mb-px inline-flex items-center gap-2 rounded-t-lg border px-4 py-2.5 font-display text-sm font-semibold transition-colors ${
-              panel === 'inicial'
-                ? 'bg-surface border-border border-b-surface text-text'
-                : 'bg-surface-2 border-transparent text-text-muted hover:text-text'
-            }`}
-          >
-            <Icon name="grid" size={15} strokeWidth={2} />
-            Vista inicial
-          </button>
+          <div className="flex items-end gap-1">
+            <button
+              type="button"
+              onClick={() => setPanel('inicial')}
+              className={`relative -mb-px inline-flex items-center gap-2 rounded-t-lg border px-4 py-2.5 font-display text-sm font-semibold transition-colors ${
+                panel === 'inicial'
+                  ? 'bg-surface border-border border-b-surface text-text'
+                  : 'bg-surface-2 border-transparent text-text-muted hover:text-text'
+              }`}
+            >
+              <Icon name="grid" size={15} strokeWidth={2} />
+              Vista inicial
+            </button>
+            <button
+              type="button"
+              onClick={() => setPanel('inicio-sesion')}
+              className={`relative -mb-px inline-flex items-center gap-2 rounded-t-lg border px-4 py-2.5 font-display text-sm font-semibold transition-colors ${
+                panel === 'inicio-sesion'
+                  ? 'bg-surface border-border border-b-surface text-text'
+                  : 'bg-surface-2 border-transparent text-text-muted hover:text-text'
+              }`}
+            >
+              <Icon name="user" size={15} strokeWidth={2} />
+              Inicio de sesión
+            </button>
+          </div>
 
           <div className="flex items-center gap-2 pb-2">
             {hasViews && (
@@ -164,6 +178,10 @@ export default function PageViewsClient() {
           <p className="text-sm text-text-muted py-12 text-center">Cargando…</p>
         ) : panel === 'inicial' ? (
           <HomePanel onEdit={() => router.push('/admin/vistas/inicio')} />
+        ) : panel === 'inicio-sesion' ? (
+          <AuthPanelPanel
+            onEdit={() => router.push('/admin/vistas/inicio-sesion')}
+          />
         ) : (
           <CreatedPanel
             views={views}
@@ -213,6 +231,52 @@ function HomePanel({ onEdit }: { onEdit: () => void }) {
             <a href="/" target="_blank" rel="noreferrer">
               <Button size="sm" variant="secondary" leadingIcon="eye">
                 Ver el inicio
+              </Button>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Panel: Inicio de sesión ───────────────────────────────────────── */
+
+function AuthPanelPanel({ onEdit }: { onEdit: () => void }) {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-6">
+      <div className="flex flex-wrap items-start gap-5">
+        <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+          <Icon name="user" size={26} strokeWidth={1.8} />
+        </span>
+        <div className="flex-1 min-w-[240px]">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge tone="gradient" size="xs" leadingIcon="star-filled">
+              Pantallas de cuenta
+            </Badge>
+            <Badge tone="success" size="xs">
+              Siempre activa
+            </Badge>
+          </div>
+          <h3 className="mt-2 font-display font-bold text-xl tracking-[-0.015em]">
+            Inicio de sesión
+          </h3>
+          <p className="mt-1 max-w-xl text-sm text-text-muted">
+            Es el panel lateral que se muestra en{' '}
+            <code className="font-mono text-[12px]">/login</code>,{' '}
+            <code className="font-mono text-[12px]">/register</code> y{' '}
+            <code className="font-mono text-[12px]">/forgot-password</code>.
+            Cambia la imagen de fondo, los colores difuminados y su
+            transparencia. El orden es: imagen al fondo, capa de color encima,
+            blobs sobre la capa.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button size="sm" leadingIcon="user" onClick={onEdit}>
+              Abrir editor
+            </Button>
+            <a href="/login" target="_blank" rel="noreferrer">
+              <Button size="sm" variant="secondary" leadingIcon="eye">
+                Ver inicio de sesión
               </Button>
             </a>
           </div>

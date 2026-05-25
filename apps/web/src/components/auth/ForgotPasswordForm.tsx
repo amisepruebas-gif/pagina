@@ -4,9 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { sendPasswordReset, describeAuthError } from '@/lib/auth';
 import { Button, Icon, Input } from '@/components/ui';
+import type { AuthPanelConfig } from '@/types/auth-panel';
 import { AuthLayout } from './AuthLayout';
 
-export default function ForgotPasswordForm() {
+export default function ForgotPasswordForm({ panel }: { panel?: AuthPanelConfig }) {
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
@@ -30,6 +31,7 @@ export default function ForgotPasswordForm() {
   if (sent) {
     return (
       <AuthLayout
+        panel={panel}
         title="Revisa tu correo"
         subtitle={
           <>
@@ -73,6 +75,7 @@ export default function ForgotPasswordForm() {
 
   return (
     <AuthLayout
+      panel={panel}
       title="Recuperar contraseña"
       subtitle="Ingresa tu correo y te enviamos un enlace para restablecer tu contraseña."
       footer={
