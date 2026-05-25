@@ -2,9 +2,13 @@ import {
   collection,
   doc,
   addDoc,
+  getDocs,
   updateDoc,
   serverTimestamp,
   increment,
+  limit,
+  query,
+  where,
   type DocumentReference
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -19,6 +23,23 @@ interface CreateChatInput {
 
 export async function createCustomerChat(input: CreateChatInput): Promise<string> {
   const trimmedMsg = input.firstMessage.trim();
+  if (!trimmedMsg) {
+    throw new Error('El mensaje no puede estar vacío.');
+  }
+  // Política: un solo chat abierto por usuario. La UI ya lo respeta, pero
+  // bloqueamos a nivel de lib para que el script no pueda crear duplicados.
+  const existing = await getDocs(
+    query(
+      collection(db, 'chats'),
+      where('userId', '==', input.uid),
+      where('status', '==', 'open'),
+      limit(1)
+    )
+  );
+  if (!existing.empty) {
+    throw new Error('Ya tienes un chat abierto. Continúa esa conversación.');
+  }
+
   const chatRef: DocumentReference = await addDoc(collection(db, 'chats'), {
     userId: input.uid,
     guestName: input.displayName,

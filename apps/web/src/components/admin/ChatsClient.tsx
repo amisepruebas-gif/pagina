@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { collection, onSnapshot, type DocumentData } from 'firebase/firestore';
+import {
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  type DocumentData
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Badge, Icon, Input, Pill } from '@/components/ui';
@@ -43,14 +50,18 @@ export default function ChatsClient() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    const unsub = onSnapshot(
+    // Solo los 100 más recientes — el sort lo hace Firestore. Sin esto el
+    // admin escuchaba TODO el historial cada vez que abría la página, lineal
+    // con la cantidad acumulada de chats.
+    const q = query(
       collection(db, 'chats'),
+      orderBy('lastMessageAt', 'desc'),
+      limit(100)
+    );
+    const unsub = onSnapshot(
+      q,
       (snap) => {
         const list = snap.docs.map((d) => normalize(d.id, d.data()));
-        list.sort(
-          (a, b) =>
-            (b.lastMessageAt?.getTime() ?? 0) - (a.lastMessageAt?.getTime() ?? 0)
-        );
         console.log('[CHATS] snapshot', list.length, 'chats');
         setItems(list);
         setLoading(false);

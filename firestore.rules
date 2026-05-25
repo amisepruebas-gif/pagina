@@ -100,18 +100,40 @@ service cloud.firestore {
     }
 
     // ============ CHAT ============
+    // Mensaje válido: texto razonable, no megabytes — protege contra inflado
+    // malicioso de Firestore.
+    function validChatMessage() {
+      return request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 5000;
+    }
+
     match /chats/{id} {
       allow read:   if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
-      // Para create, resource es null — usamos request.resource (lo que se va a escribir)
-      allow create: if isStaff() || (isAuth() && request.resource.data.userId == request.auth.uid);
-      allow update: if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
+      // Create: el cliente solo puede abrir chats a su nombre y en estado abierto.
+      // No puede pre-asignar `assignedTo` ni inflar contadores arbitrariamente.
+      allow create: if isStaff() ||
+                       (isAuth()
+                        && request.resource.data.userId == request.auth.uid
+                        && request.resource.data.get('status', 'open') == 'open');
+      // Update: el dueño puede tocar campos suaves (preview, contadores que
+      // ya manejamos atomically). NO puede cambiar `userId`, `status` ni
+      // `assignedTo` — eso es prerrogativa del staff.
+      allow update: if isStaff()
+                    || (isAuth()
+                        && resource.data.userId == request.auth.uid
+                        && request.resource.data.get('userId', '') == resource.data.get('userId', '')
+                        && request.resource.data.get('status', 'open') == resource.data.get('status', 'open')
+                        && request.resource.data.get('assignedTo', '') == resource.data.get('assignedTo', ''));
       allow delete: if false;
 
       match /messages/{mid} {
         allow read:   if isStaff() ||
                          (isAuth() && get(/databases/$(database)/documents/chats/$(id)).data.userId == request.auth.uid);
-        allow create: if isStaff() ||
-                         (isAuth() && get(/databases/$(database)/documents/chats/$(id)).data.userId == request.auth.uid);
+        allow create: if validChatMessage() && (
+                         isStaff() ||
+                         (isAuth() && get(/databases/$(database)/documents/chats/$(id)).data.userId == request.auth.uid)
+                       );
         allow update, delete: if false;
       }
     }
