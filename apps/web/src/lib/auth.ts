@@ -75,7 +75,7 @@ export async function logout() {
 
 export async function sendPasswordReset(email: string) {
   await sendPasswordResetEmail(auth, email.trim());
-  console.log('[AUTH] reset email sent', email);
+  console.log('[AUTH] reset email sent');
 }
 
 export function describeAuthError(err: unknown): string {

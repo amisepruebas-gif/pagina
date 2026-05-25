@@ -15,7 +15,7 @@ No es una lista de tareas para hacer todas a la vez — es un mapa para ir revis
 
 | # | Categoría | Estado |
 |---|-----------|--------|
-| 01 | [Seguridad](01-seguridad.md) | Pendiente |
+| 01 | [Seguridad](01-seguridad.md) | Hecho (fixes aplicados, backlog menor) |
 | 02 | [Performance](02-performance.md) | Pendiente |
 | 03 | [SEO](03-seo.md) | Pendiente |
 | 04 | [Accesibilidad](04-accesibilidad.md) | Pendiente |
