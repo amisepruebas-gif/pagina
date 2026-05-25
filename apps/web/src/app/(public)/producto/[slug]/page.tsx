@@ -15,7 +15,9 @@ import { getCategories } from '@/lib/categories';
 import { getSubcategories } from '@/lib/subcategories';
 import { getMaterials } from '@/lib/materials';
 
-export const revalidate = 0;
+// ISR cada 5 min — los productos rara vez cambian, los precios y stock
+// se revalidan server-side al crear la sesión de Stripe.
+export const revalidate = 300;
 
 function baseUrl(): string {
   return (

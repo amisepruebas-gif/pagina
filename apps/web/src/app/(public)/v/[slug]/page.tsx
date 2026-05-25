@@ -5,7 +5,7 @@ import { getProducts } from '@/lib/products';
 import { getCategories } from '@/lib/categories';
 import DynamicView from '@/components/views/DynamicView';
 
-export const revalidate = 0;
+export const revalidate = 300;
 
 export async function generateMetadata({
   params

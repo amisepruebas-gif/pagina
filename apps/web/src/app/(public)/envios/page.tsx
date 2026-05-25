@@ -2,7 +2,7 @@ import LegalPage from '@/components/LegalPage';
 import { getConfig } from '@/lib/config';
 
 export const metadata = { title: 'Política de envíos · pagina' };
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export default async function EnviosPage() {
   const { shipping } = await getConfig();

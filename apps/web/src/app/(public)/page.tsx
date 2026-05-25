@@ -4,8 +4,9 @@ import { getProductsByIds } from '@/lib/products';
 import { getCategories } from '@/lib/categories';
 import { getHomeConfig } from '@/lib/home-config';
 
-// Sin caché en dev — siempre vemos cambios recién agregados en Firestore Console.
-export const revalidate = 0;
+// ISR: el editor del admin propaga cambios en ≤ 1 min, y entre visitas
+// el HTML se sirve del edge cache de Vercel sin tocar Firestore.
+export const revalidate = 60;
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ?? 'http://localhost:3030';
