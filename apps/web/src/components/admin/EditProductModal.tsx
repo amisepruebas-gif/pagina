@@ -112,6 +112,7 @@ export default function EditProductModal({
             description: raw.description,
             longDescription: raw.longDescription,
             price,
+            costPrice: raw.costPrice,
             originalPrice: raw.originalPrice,
             stock: raw.stock,
             isNew: !!raw.isNew,
