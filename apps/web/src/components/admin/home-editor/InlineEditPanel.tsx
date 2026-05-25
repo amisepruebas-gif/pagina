@@ -9,6 +9,7 @@ import {
 import ImageInput from '../ImageInput';
 import ProductPickerButton from '../ProductPickerButton';
 import CategoryMultiPicker from '../CategoryMultiPicker';
+import PageViewLinkField from '../PageViewLinkField';
 import { useHomeEdit } from './HomeEditContext';
 import { FIELD_REGISTRY, type FieldDef } from './field-registry';
 import { ModuleEditor } from './ModuleEditor';
@@ -202,6 +203,17 @@ function FieldWidget({ field }: { field: FieldDef }) {
         <CategoryMultiPicker
           value={Array.isArray(value) ? (value as string[]) : []}
           onChange={(ids) => setField(field.path, ids)}
+        />
+      </Field>
+    );
+  }
+  if (field.type === 'pageviewlink') {
+    return (
+      <Field label={field.label}>
+        <PageViewLinkField
+          value={String(value ?? '')}
+          placeholder={field.placeholder}
+          onChange={(v) => setField(field.path, v)}
         />
       </Field>
     );

@@ -17,7 +17,9 @@ export type FieldType =
   | 'array'
   | 'image'
   | 'products'
-  | 'categories';
+  | 'categories'
+  /** Text input para URL libre + botón que abre el selector de vistas creadas. */
+  | 'pageviewlink';
 
 /** Tipo de cada subcampo dentro de un array (ej. una tarjeta del collage). */
 export type ItemFieldType = 'text' | 'textarea' | 'color' | 'icon' | 'image';
@@ -249,7 +251,8 @@ export const FIELD_REGISTRY: Record<HomeSectionId, FieldDef[]> = {
     {
       path: 'promoBanner.primaryCta.href',
       label: 'Botón principal — enlace',
-      type: 'text'
+      type: 'pageviewlink',
+      placeholder: '/shop'
     },
     {
       path: 'promoBanner.secondaryCta.label',
