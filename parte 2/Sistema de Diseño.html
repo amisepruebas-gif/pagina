@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sistema de Diseño — E-commerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Inter+Tight:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ───────── Design tokens (CSS vars, tweakable at runtime) ───────── */
+    :root {
+      /* brand */
+      --brand-50:  #E6FBEE;
+      --brand-100: #BFF5D6;
+      --brand-200: #84ECB1;
+      --brand-300: #46DE89;
+      --brand-400: #14D26A;
+      --brand-500: #00C853;
+      --brand-600: #00A847;
+      --brand-700: #008538;
+      --brand-800: #006B2E;
+      --brand-900: #054A22;
+
+      --secondary: #FF5C8A;
+      --secondary-600: #ED3A6E;
+      --accent:    #FFD23F;
+      --accent-2:  #7C3AED;
+
+      --grad-from: #00D97A;
+      --grad-to:   #C7F864;
+      --grad-angle: 135deg;
+      --grad-intensity: 1;
+
+      /* status */
+      --success: #16A34A;
+      --error:   #EF4444;
+      --warning: #F59E0B;
+      --info:    #3B82F6;
+
+      /* neutrals — warm */
+      --bg:        #FAFAF7;
+      --surface:   #FFFFFF;
+      --surface-2: #F4F4EE;
+      --border:    #E7E7DE;
+      --border-strong: #D0D0C2;
+      --text:      #1A1A14;
+      --text-muted:#5B5B4D;
+      --text-soft: #8A8A78;
+      --on-brand:  #FFFFFF;
+
+      /* radii */
+      --r-xs: 4px;
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 18px;
+      --r-xl: 28px;
+      --r-2xl: 40px;
+      --r-pill: 999px;
+      --r-mult: 1;
+
+      /* density */
+      --pad: 16px;
+      --gap: 16px;
+      --pad-mult: 1;
+
+      /* shadows */
+      --sh-xs: 0 1px 2px rgba(20,20,12,0.06);
+      --sh-sm: 0 2px 6px rgba(20,20,12,0.08);
+      --sh-md: 0 8px 20px -4px rgba(20,20,12,0.10), 0 2px 6px rgba(20,20,12,0.05);
+      --sh-lg: 0 24px 48px -12px rgba(20,20,12,0.18), 0 4px 12px rgba(20,20,12,0.06);
+      --sh-brand: 0 14px 30px -10px rgba(0, 200, 83, 0.45);
+      --sh-secondary: 0 14px 30px -10px rgba(255, 92, 138, 0.45);
+
+      /* transitions */
+      --t-fast: 120ms;
+      --t-base: 220ms;
+      --t-slow: 380ms;
+      --ease: cubic-bezier(.22,1,.36,1);
+
+      /* fonts */
+      --font-display: 'Space Grotesk', 'Inter Tight', system-ui, sans-serif;
+      --font-body:    'Sora', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    /* dark */
+    html[data-theme="dark"] {
+      --bg:        #0A0A08;
+      --surface:   #14140F;
+      --surface-2: #1C1C16;
+      --border:    #2B2B22;
+      --border-strong: #3D3D31;
+      --text:      #F5F5EE;
+      --text-muted:#B5B5A4;
+      --text-soft: #7E7E6C;
+      --sh-xs: 0 1px 2px rgba(0,0,0,0.5);
+      --sh-sm: 0 2px 6px rgba(0,0,0,0.5);
+      --sh-md: 0 8px 20px -4px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.3);
+      --sh-lg: 0 24px 48px -12px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease);
+    }
+    h1,h2,h3,h4,h5 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02em; }
+    h1 { font-weight: 700; }
+    a { color: inherit; }
+
+    /* Utility classes */
+    .font-display { font-family: var(--font-display); }
+    .font-mono { font-family: var(--font-mono); }
+
+    .brand-grad {
+      background: linear-gradient(var(--grad-angle), var(--grad-from), var(--grad-to));
+    }
+    .brand-grad-text {
+      background: linear-gradient(var(--grad-angle), var(--grad-from), var(--grad-to));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+
+    /* container */
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+    /* section header */
+    .sec-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-soft);
+    }
+    .sec-eyebrow::before {
+      content: ""; width: 28px; height: 1px; background: currentColor; opacity: .6;
+    }
+
+    /* nav side dots */
+    .blob {
+      position: absolute; border-radius: 50%; filter: blur(60px);
+      pointer-events: none; opacity: calc(0.55 * var(--grad-intensity));
+    }
+
+    /* hover-card lift */
+    .lift { transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease); }
+    .lift:hover { transform: translateY(-4px); }
+
+    /* scrollbar nicety */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* keyboard focus */
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--brand-500);
+      outline-offset: 2px;
+    }
+
+    /* skeleton shimmer */
+    @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+    .sk {
+      background: linear-gradient(90deg, var(--surface-2) 0%, var(--border) 50%, var(--surface-2) 100%);
+      background-size: 800px 100%;
+      animation: shimmer 1.6s linear infinite;
+      border-radius: var(--r-sm);
+    }
+
+    /* floating sticker */
+    @keyframes wiggle {
+      0%,100%{ transform: rotate(-6deg); }
+      50%    { transform: rotate(6deg); }
+    }
+    .sticker { animation: wiggle 4s ease-in-out infinite; transform-origin: center; }
+
+    /* spin loader */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.8s linear infinite; }
+
+    /* product image placeholder pattern */
+    .ph-stripes {
+      background-color: var(--surface-2);
+      background-image: repeating-linear-gradient(135deg,
+        transparent 0px, transparent 14px,
+        rgba(0,0,0,0.04) 14px, rgba(0,0,0,0.04) 15px);
+    }
+    html[data-theme="dark"] .ph-stripes {
+      background-image: repeating-linear-gradient(135deg,
+        transparent 0px, transparent 14px,
+        rgba(255,255,255,0.05) 14px, rgba(255,255,255,0.05) 15px);
+    }
+
+    /* ───────── Mobile ───────── */
+    @media (max-width: 720px) {
+      .wrap { padding: 0 16px !important; }
+      .pill-btn { height: 44px !important; padding: 0 18px !important; }
+      .fav-btn  { min-width: 44px !important; min-height: 44px !important; }
+    }
+
+    /* ───────── Hover vs touch (Quick-actions card) ───────── */
+    .qa-touch-only { display: none; }
+    @media (hover: none), (pointer: coarse) {
+      .qa-hover-only { display: none !important; }
+      .qa-touch-only { display: flex !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="product-cards.jsx"></script>
+  <script type="text/babel" src="sections.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

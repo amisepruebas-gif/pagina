@@ -1,0 +1,9 @@
+export { HeroSection }       from "./HeroSection";
+export { TrustBar }           from "./TrustBar";
+export { CategoryGrid }       from "./CategoryGrid";
+export { FeaturedProducts }   from "./FeaturedProducts";
+export { PromoBanner }        from "./PromoBanner";
+export { NewArrivals }        from "./NewArrivals";
+export { FlashSale }          from "./FlashSale";
+export { BestSellers }        from "./BestSellers";
+export { Newsletter }         from "./Newsletter";

@@ -1,11 +1,64 @@
-import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getProductBySlug, getProductImages } from '@/lib/products';
 import ProductGallery from '@/components/product/ProductGallery';
-import AddToCartForm from '@/components/product/AddToCartForm';
-import BulkPricing from '@/components/product/BulkPricing';
+import ProductBuyArea from '@/components/product/ProductBuyArea';
+import { VolumePricing } from '@/components/product/VolumePricing';
+import { SpecsTable } from '@/components/product/SpecsTable';
+import { SectionTitle } from '@/components/product/SectionTitle';
+import RelatedProducts from '@/components/product/RelatedProducts';
+import ProductReviews from '@/components/product/ProductReviews';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import JsonLd from '@/components/JsonLd';
+import { getConfig } from '@/lib/config';
+import { getCategories } from '@/lib/categories';
+import { getSubcategories } from '@/lib/subcategories';
+import { getMaterials } from '@/lib/materials';
 
 export const revalidate = 0;
+
+function baseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ??
+    'http://localhost:3030'
+  );
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+  if (!product) return { title: 'Producto no encontrado · pagina' };
+
+  const desc =
+    product.description ??
+    product.longDescription?.slice(0, 160) ??
+    `${product.name} — $${product.price.toFixed(2)} ${product.currency}`;
+  const image = product.primaryImageUrl;
+  const url = `${baseUrl()}/producto/${product.slug}`;
+
+  return {
+    title: `${product.name} · pagina`,
+    description: desc.slice(0, 200),
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      title: product.name,
+      description: desc.slice(0, 200),
+      url,
+      images: image ? [{ url: image, alt: product.name }] : undefined
+    },
+    twitter: {
+      card: image ? 'summary_large_image' : 'summary',
+      title: product.name,
+      description: desc.slice(0, 200),
+      images: image ? [image] : undefined
+    }
+  };
+}
 
 export default async function ProductDetailPage({
   params
@@ -17,95 +70,118 @@ export default async function ProductDetailPage({
 
   if (!product) notFound();
 
-  const images = await getProductImages(product.id);
+  const [images, config, categories, subcategories, materials] =
+    await Promise.all([
+      getProductImages(product.id),
+      getConfig(),
+      getCategories(),
+      getSubcategories(),
+      getMaterials()
+    ]);
+
+  const specRows = [
+    { label: 'SKU', value: product.sku ?? '' },
+    {
+      label: 'Categoría',
+      value: product.categoryId
+        ? categories.find((c) => c.id === product.categoryId)?.name ?? ''
+        : ''
+    },
+    {
+      label: 'Subcategoría',
+      value: product.subcategoryId
+        ? subcategories.find((s) => s.id === product.subcategoryId)?.name ?? ''
+        : ''
+    },
+    {
+      label: 'Material',
+      value: product.materialId
+        ? materials.find((m) => m.id === product.materialId)?.name ?? ''
+        : ''
+    }
+  ];
+
+  const productUrl = `${baseUrl()}/producto/${product.slug}`;
+  const imageUrls = [
+    product.primaryImageUrl,
+    ...images.map((i) => i.url)
+  ].filter((u): u is string => Boolean(u));
+  const inStock = typeof product.stock !== 'number' || product.stock > 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="text-xs text-gray-500 mb-6">
-        <Link href="/" className="hover:text-accent">
-          Inicio
-        </Link>
-        <span className="mx-2 text-gray-300">/</span>
-        <Link href="/shop" className="hover:text-accent">
-          Tienda
-        </Link>
-        <span className="mx-2 text-gray-300">/</span>
-        <span className="text-gray-900">{product.name}</span>
-      </nav>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 md:py-10">
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org/',
+          '@type': 'Product',
+          name: product.name,
+          description:
+            product.description ??
+            product.longDescription?.slice(0, 200) ??
+            product.name,
+          image: imageUrls.length > 0 ? imageUrls : undefined,
+          sku: product.sku ?? undefined,
+          offers: {
+            '@type': 'Offer',
+            url: productUrl,
+            priceCurrency: product.currency,
+            price: product.price.toFixed(2),
+            availability: inStock
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock'
+          }
+        }}
+      />
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Inicio', item: baseUrl() },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Tienda',
+              item: `${baseUrl()}/shop`
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: product.name,
+              item: productUrl
+            }
+          ]
+        }}
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      <Breadcrumbs
+        items={[
+          { label: 'Inicio', href: '/' },
+          { label: 'Tienda', href: '/shop' },
+          { label: product.name }
+        ]}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
         <ProductGallery product={product} images={images} />
-
-        <div>
-          {product.sku && (
-            <p className="text-xs text-gray-500 uppercase tracking-wide">
-              SKU: {product.sku}
-            </p>
-          )}
-          <h1 className="mt-1 font-display text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-            {product.name}
-          </h1>
-
-          <div className="mt-4 flex items-baseline gap-3 flex-wrap">
-            <span className="text-3xl font-bold text-gray-900">
-              ${product.price.toFixed(2)}
-            </span>
-            {product.originalPrice !== undefined &&
-              product.originalPrice > product.price && (
-                <span className="text-lg text-gray-400 line-through">
-                  ${product.originalPrice.toFixed(2)}
-                </span>
-              )}
-            <span className="text-sm text-gray-500">{product.currency}</span>
-            {product.originalPrice !== undefined &&
-              product.originalPrice > product.price && (
-                <span className="rounded-full bg-accent text-white text-xs font-bold px-2.5 py-1">
-                  −{Math.round(
-                    ((product.originalPrice - product.price) / product.originalPrice) * 100
-                  )}
-                  %
-                </span>
-              )}
-          </div>
-
-          {product.description && (
-            <p className="mt-6 text-gray-700 leading-relaxed">
-              {product.description}
-            </p>
-          )}
-
-          <div className="mt-8">
-            <AddToCartForm product={product} />
-          </div>
-
-          <BulkPricing product={product} />
-
-          {product.longDescription && (
-            <div className="mt-10">
-              <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                Descripción
-              </h2>
-              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {product.longDescription}
-              </p>
-            </div>
-          )}
-
-          {product.tagIds.length > 0 && (
-            <div className="mt-8 flex flex-wrap gap-2">
-              {product.tagIds.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-gray-100 text-gray-600 text-xs font-medium px-3 py-1"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductBuyArea product={product} shipping={config.shipping} />
       </div>
+
+      {product.longDescription && (
+        <section className="py-12 border-t border-border mt-8">
+          <SectionTitle eyebrow="Descripción">
+            Sobre este producto
+          </SectionTitle>
+          <p className="text-base sm:text-lg leading-relaxed text-text-muted max-w-3xl whitespace-pre-wrap">
+            {product.longDescription}
+          </p>
+        </section>
+      )}
+
+      <SpecsTable rows={specRows} />
+      <VolumePricing product={product} />
+      <ProductReviews productId={product.id} />
+      <RelatedProducts current={product} />
     </div>
   );
 }

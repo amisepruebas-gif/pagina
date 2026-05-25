@@ -1,56 +1,117 @@
 import Link from 'next/link';
+import { getConfig } from '@/lib/config';
 
-const socialLinks = [
-  { href: 'https://www.facebook.com', label: 'Facebook', name: 'facebook' },
-  { href: 'https://x.com', label: 'X', name: 'x' },
-  { href: 'https://www.instagram.com', label: 'Instagram', name: 'instagram' },
-  { href: 'https://www.linkedin.com', label: 'LinkedIn', name: 'linkedin' },
-  { href: 'https://web.whatsapp.com', label: 'WhatsApp', name: 'whatsapp' }
-] as const;
-
-const quickLinks = [
-  { href: '/shop?filter=new', label: 'Novedades' },
-  { href: '/shop?filter=top', label: 'Lo mejor de hoy' },
-  { href: '/shop?filter=deals', label: 'Mejores ofertas' },
-  { href: '/shop?filter=sale-50', label: '50% descuento' }
+const COLS: { title: string; links: { href: string; label: string }[] }[] = [
+  {
+    title: 'Comprar',
+    links: [
+      { href: '/shop', label: 'Tienda' },
+      { href: '/shop?sale=true', label: 'Ofertas' }
+    ]
+  },
+  {
+    title: 'Ayuda',
+    links: [
+      { href: '/envios', label: 'Envíos y entregas' },
+      { href: '/devoluciones', label: 'Devoluciones' }
+    ]
+  },
+  {
+    title: 'Legal',
+    links: [
+      { href: '/terminos', label: 'Términos' },
+      { href: '/privacidad', label: 'Privacidad' }
+    ]
+  }
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  const config = await getConfig();
+  const social = config.social;
+
+  const socialLinks = [
+    social.facebook && { href: social.facebook, name: 'facebook', label: 'Facebook' },
+    social.x && { href: social.x, name: 'x', label: 'X' },
+    social.instagram && { href: social.instagram, name: 'instagram', label: 'Instagram' },
+    social.linkedin && { href: social.linkedin, name: 'linkedin', label: 'LinkedIn' },
+    social.whatsapp && { href: social.whatsapp, name: 'whatsapp', label: 'WhatsApp' }
+  ].filter(Boolean) as { href: string; name: string; label: string }[];
+
   return (
-    <footer className="border-t border-gray-200 mt-16 bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-10 flex flex-col items-center gap-6">
-        <ul className="flex items-center gap-5">
-          {socialLinks.map((s) => (
-            <li key={s.name}>
-              <a
-                href={s.href}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={s.label}
-                className="text-gray-500 hover:text-accent transition-colors block"
-              >
-                <SocialIcon name={s.name} />
-              </a>
-            </li>
-          ))}
-        </ul>
+    <footer className="bg-surface-2 border-t border-border mt-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
+        <div className="grid gap-10 grid-cols-2 md:grid-cols-4 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+          <div className="col-span-2 md:col-span-1">
+            <span className="font-display text-2xl font-bold">
+              <span className="bg-brand-grad bg-clip-text text-transparent">
+                pagina
+              </span>
+            </span>
+            <p className="mt-4 text-text-muted text-sm leading-relaxed max-w-xs">
+              Accesorios y productos personalizados. Envío rápido y devoluciones
+              fáciles.
+            </p>
+            {socialLinks.length > 0 && (
+              <ul className="mt-5 flex items-center gap-3">
+                {socialLinks.map((s) => (
+                  <li key={s.name}>
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={s.label}
+                      className="inline-flex items-center justify-center size-9 rounded-pill bg-surface border border-border text-text-muted hover:text-brand-600 hover:border-brand-500 transition"
+                    >
+                      <SocialIcon name={s.name} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-semibold">
-          {quickLinks.map((l) => (
-            <li key={l.href}>
-              <Link
-                href={l.href}
-                className="text-gray-700 hover:text-accent transition-colors"
-              >
-                {l.label}
-              </Link>
-            </li>
+          {COLS.map((c) => (
+            <div key={c.title}>
+              <h5 className="font-display font-bold uppercase tracking-wider text-[13px] mb-3.5">
+                {c.title}
+              </h5>
+              <ul className="space-y-2.5">
+                {c.links.map((l) => (
+                  <li key={l.href}>
+                    <Link
+                      href={l.href}
+                      className="text-text-muted text-sm hover:text-brand-700 transition"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
 
-        <p className="text-xs text-gray-500 text-center">
-          <span className="font-medium">pagina</span> © {new Date().getFullYear()}. Todos los derechos reservados.
-        </p>
+        <div className="mt-12 pt-6 border-t border-border flex flex-wrap items-center justify-between gap-3 text-text-soft text-[13px]">
+          <span>
+            <span className="font-medium text-text">
+              {config.branding.siteName}
+            </span>{' '}
+            © {new Date().getFullYear()}. Todos los derechos reservados.
+          </span>
+          {(config.contact.email || config.contact.phone) && (
+            <span className="inline-flex flex-wrap gap-x-4 gap-y-1">
+              {config.contact.email && (
+                <a
+                  href={`mailto:${config.contact.email}`}
+                  className="hover:text-text"
+                >
+                  {config.contact.email}
+                </a>
+              )}
+              {config.contact.phone && <span>{config.contact.phone}</span>}
+            </span>
+          )}
+        </div>
       </div>
     </footer>
   );
@@ -59,8 +120,8 @@ export default function Footer() {
 function SocialIcon({ name }: { name: string }) {
   return (
     <svg
-      width="22"
-      height="22"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

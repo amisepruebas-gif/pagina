@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────── Design tokens ───────────────────────── */
+
+@layer base {
+  :root {
+    /* brand */
+    --brand-50:  #E6FBEE;
+    --brand-100: #BFF5D6;
+    --brand-200: #84ECB1;
+    --brand-300: #46DE89;
+    --brand-400: #14D26A;
+    --brand-500: #00C853;
+    --brand-600: #00A847;
+    --brand-700: #008538;
+    --brand-800: #006B2E;
+    --brand-900: #054A22;
+
+    /* accents */
+    --secondary:     #FF5C8A;
+    --secondary-600: #ED3A6E;
+    --accent:        #FFD23F;
+    --accent-2:      #7C3AED;
+
+    /* gradient */
+    --grad-from:  #00D97A;
+    --grad-to:    #C7F864;
+    --grad-angle: 135deg;
+
+    /* status */
+    --success: #16A34A;
+    --error:   #EF4444;
+    --warning: #F59E0B;
+    --info:    #3B82F6;
+
+    /* neutrals (warm) */
+    --bg:            #FAFAF7;
+    --surface:       #FFFFFF;
+    --surface-2:     #F4F4EE;
+    --border:        #E7E7DE;
+    --border-strong: #D0D0C2;
+    --text:          #1A1A14;
+    --text-muted:    #5B5B4D;
+    --text-soft:     #8A8A78;
+    --on-brand:      #FFFFFF;
+
+    /* radii */
+    --r-xs:   4px;
+    --r-sm:   8px;
+    --r-md:   12px;
+    --r-lg:   18px;
+    --r-xl:   28px;
+    --r-2xl:  40px;
+    --r-pill: 999px;
+
+    /* shadows */
+    --sh-xs:  0 1px 2px rgba(20,20,12,0.06);
+    --sh-sm:  0 2px 6px rgba(20,20,12,0.08);
+    --sh-md:  0 8px 20px -4px rgba(20,20,12,0.10), 0 2px 6px rgba(20,20,12,0.05);
+    --sh-lg:  0 24px 48px -12px rgba(20,20,12,0.18), 0 4px 12px rgba(20,20,12,0.06);
+    --sh-brand:     0 14px 30px -10px rgba(0, 200, 83, 0.45);
+    --sh-secondary: 0 14px 30px -10px rgba(255, 92, 138, 0.45);
+
+    /* fonts (overridden by next/font variables in layout.tsx) */
+    --font-display: "Space Grotesk", system-ui, sans-serif;
+    --font-body:    "Sora", system-ui, sans-serif;
+    --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+  }
+
+  [data-theme="dark"] {
+    --bg:            #0A0A08;
+    --surface:       #14140F;
+    --surface-2:     #1C1C16;
+    --border:        #2B2B22;
+    --border-strong: #3D3D31;
+    --text:          #F5F5EE;
+    --text-muted:    #B5B5A4;
+    --text-soft:     #7E7E6C;
+    --sh-xs: 0 1px 2px rgba(0,0,0,0.5);
+    --sh-sm: 0 2px 6px rgba(0,0,0,0.5);
+    --sh-md: 0 8px 20px -4px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.3);
+    --sh-lg: 0 24px 48px -12px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
+  }
+}
+
+/* shimmer skeleton */
+.shimmer {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--border) 50%, var(--surface-2) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* product image placeholder */
+.ph-stripes {
+  background-color: var(--surface-2);
+  background-image: repeating-linear-gradient(135deg,
+    transparent 0px, transparent 14px,
+    rgba(0,0,0,0.04) 14px, rgba(0,0,0,0.04) 15px);
+}
+[data-theme="dark"] .ph-stripes {
+  background-image: repeating-linear-gradient(135deg,
+    transparent 0px, transparent 14px,
+    rgba(255,255,255,0.05) 14px, rgba(255,255,255,0.05) 15px);
+}

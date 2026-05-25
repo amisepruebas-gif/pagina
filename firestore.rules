@@ -3,11 +3,31 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAuth()       { return request.auth != null; }
-    function role()         { return isAuth() && request.auth.token.role != null ? request.auth.token.role : 'anon'; }
-    function isStaff()      { return role() == 'staff' || role() == 'admin'; }
-    function isAdmin()      { return role() == 'admin'; }
-    function isOwner(uid)   { return isAuth() && request.auth.uid == uid; }
+    function isAuth()     { return request.auth != null; }
+    function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
+
+    // Roles: prefieren custom claim (cuando llegue setUserRole CF); mientras
+    // tanto leen el doc users/{uid}.role. Usamos .get(key, default) en todo
+    // para que campos faltantes no aborten la regla.
+
+    function tokenRole() {
+      return isAuth() ? request.auth.token.get('role', '') : '';
+    }
+
+    function docRole() {
+      return isAuth() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'customer')
+        : '';
+    }
+
+    function isStaff() {
+      return tokenRole() in ['staff', 'admin']
+          || docRole()  in ['staff', 'admin'];
+    }
+
+    function isAdmin() {
+      return tokenRole() == 'admin' || docRole() == 'admin';
+    }
 
     // ============ CATÁLOGO PÚBLICO ============
     match /products/{id} {
@@ -23,29 +43,31 @@ service cloud.firestore {
     match /materials/{id}     { allow read: if true; allow write: if isAdmin(); }
     match /tags/{id}          { allow read: if true; allow write: if isAdmin(); }
     match /discounts/{id}     { allow read: if true; allow write: if isAdmin(); }
-    match /aiEntries/{id}     { allow read: if true; allow write: if isAdmin(); }
     match /siteContent/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /vistas/{id}        { allow read: if true; allow write: if isAdmin(); }
     match /config/{id}        { allow read: if true; allow write: if isAdmin(); }
     match /complaintTypes/{id} { allow read: if true; allow write: if isAdmin(); }
 
-    // ============ SOLO STAFF ============
-    match /gallery/{id}       { allow read, write: if isStaff(); }
-    match /aiPrompts/{id} {
-      allow read:  if isStaff();
-      allow write: if isAdmin();
-    }
-
     // ============ USUARIO ============
+    // El dueño edita su perfil PERO no su `role` ni `active` — esos campos
+    // solo los cambia un admin (o el Admin SDK vía CF setUserRole). Sin esto
+    // un customer podría auto-promoverse a admin escribiendo su propio doc.
     match /users/{uid} {
-      allow read:  if isOwner(uid) || isStaff();
-      allow write: if isOwner(uid) || isAdmin();
+      allow read:   if isOwner(uid) || isStaff();
+      allow create: if isAdmin() ||
+                       (isOwner(uid)
+                        && request.resource.data.get('role', 'customer') == 'customer'
+                        && request.resource.data.get('active', true) == true);
+      allow update: if isAdmin() ||
+                       (isOwner(uid)
+                        && request.resource.data.get('role', 'customer')
+                           == resource.data.get('role', 'customer')
+                        && request.resource.data.get('active', true)
+                           == resource.data.get('active', true));
+      allow delete: if isAdmin();
 
       match /addresses/{aid}    { allow read, write: if isOwner(uid); }
       match /favorites/{pid}    { allow read, write: if isOwner(uid); }
-      match /aiGenerations/{gid} {
-        allow read:  if isOwner(uid) || isStaff();
-        allow write: if false;   // solo escribe Cloud Functions
-      }
     }
 
     // ============ CARRITOS ============
@@ -54,33 +76,78 @@ service cloud.firestore {
       allow read, write: if isAuth() && (request.auth.uid == cartId || isStaff());
     }
 
-    // ============ ÓRDENES (solo CF escribe) ============
+    // ============ ÓRDENES ============
+    // create: solo CF (cuando Stripe esté activo). update: staff puede cambiar
+    // estado/paquetería. delete: nunca.
     match /orders/{id} {
-      allow read:  if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
-      allow write: if false;
+      allow read:   if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow create: if false;
+      // Staff cambia estado/paquetería, NO los montos ni el dueño de la venta.
+      allow update: if isStaff()
+          && request.resource.data.get('total', 0) == resource.data.get('total', 0)
+          && request.resource.data.get('subtotal', 0) == resource.data.get('subtotal', 0)
+          && request.resource.data.get('discountTotal', 0) == resource.data.get('discountTotal', 0)
+          && request.resource.data.get('userId', '') == resource.data.get('userId', '')
+          && request.resource.data.get('orderNumber', '') == resource.data.get('orderNumber', '');
+      allow delete: if false;
 
       match /events/{eid} {
-        allow read:  if isStaff() ||
-                        (isAuth() && get(/databases/$(database)/documents/orders/$(id)).data.userId == request.auth.uid);
-        allow write: if false;
+        allow read:   if isStaff() ||
+                         (isAuth() && get(/databases/$(database)/documents/orders/$(id)).data.userId == request.auth.uid);
+        allow create: if isStaff();
+        allow update, delete: if false;
       }
     }
 
     // ============ CHAT ============
     match /chats/{id} {
-      allow read, write: if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow read:   if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
+      // Para create, resource es null — usamos request.resource (lo que se va a escribir)
+      allow create: if isStaff() || (isAuth() && request.resource.data.userId == request.auth.uid);
+      allow update: if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow delete: if false;
 
       match /messages/{mid} {
-        allow read, write: if isStaff() ||
-                              (isAuth() && get(/databases/$(database)/documents/chats/$(id)).data.userId == request.auth.uid);
+        allow read:   if isStaff() ||
+                         (isAuth() && get(/databases/$(database)/documents/chats/$(id)).data.userId == request.auth.uid);
+        allow create: if isStaff() ||
+                         (isAuth() && get(/databases/$(database)/documents/chats/$(id)).data.userId == request.auth.uid);
+        allow update, delete: if false;
       }
     }
 
     // ============ QUEJAS ============
+    // create: el cliente solo puede abrir quejas A SU NOMBRE.
     match /complaints/{id} {
       allow read:   if isStaff() || (isAuth() && resource.data.userId == request.auth.uid);
-      allow create: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isStaff();
+    }
+
+    // ============ RESEÑAS ============
+    // Lectura pública. El usuario crea/edita la suya. El ID DEBE ser
+    // `{productId}_{uid}` → garantiza una sola reseña por usuario/producto.
+    // rating 1-5, text acotado. El dueño NO puede cambiar `hidden` (moderación).
+    function validReview() {
+      return request.resource.data.rating is number
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.get('text', '').size() <= 2000;
+    }
+    match /reviews/{id} {
+      allow read:   if true;
+      allow create: if isAuth()
+          && request.resource.data.userId == request.auth.uid
+          && id == request.resource.data.productId + '_' + request.auth.uid
+          && validReview();
+      allow update: if isStaff()
+          || (isAuth()
+              && resource.data.userId == request.auth.uid
+              && request.resource.data.userId == request.auth.uid
+              && validReview()
+              && request.resource.data.get('hidden', false)
+                 == resource.data.get('hidden', false));
+      allow delete: if isStaff();
     }
 
     // ============ COUNTERS (solo CF) ============

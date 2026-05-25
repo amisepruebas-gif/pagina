@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Husky pre-commit hook — corre typecheck antes de aceptar el commit.
+# Si tarda demasiado y molesta, comenta la línea pnpm typecheck.
+
+echo "[husky] typecheck…"
+pnpm typecheck || {
+  echo ""
+  echo "[X] Typecheck fallo - commit abortado."
+  echo "    Arregla los errores arriba y vuelve a hacer git commit."
+  echo "    Para forzar (no recomendado): git commit --no-verify"
+  exit 1
+}

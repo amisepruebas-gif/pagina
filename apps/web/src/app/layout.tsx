@@ -1,24 +1,50 @@
 import type { Metadata } from 'next';
-import { Inter, Poppins } from 'next/font/google';
+import { Space_Grotesk, Sora, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/Providers';
 
-const inter = Inter({
+const display = Space_Grotesk({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-display',
   display: 'swap'
 });
 
-const poppins = Poppins({
+const body = Sora({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-poppins',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-body',
   display: 'swap'
 });
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
+  display: 'swap'
+});
+
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ?? 'http://localhost:3030';
 
 export const metadata: Metadata = {
-  title: 'pagina',
-  description: 'pagina'
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: 'pagina',
+    template: '%s'
+  },
+  description: 'Accesorios y llaveros personalizados',
+  openGraph: {
+    type: 'website',
+    locale: 'es_MX',
+    siteName: 'pagina',
+    url: '/'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' }
+  }
 };
 
 export default function RootLayout({
@@ -27,8 +53,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${inter.variable} ${poppins.variable}`}>
-      <body className="antialiased font-sans">
+    <html
+      lang="es"
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
+    >
+      <body className="antialiased font-body">
         <Providers>{children}</Providers>
       </body>
     </html>

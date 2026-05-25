@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { logout } from '@/lib/auth';
+import { Icon } from '@/components/ui';
 
 export default function AccountMenu() {
   const { user, profile, loading } = useAuth();
@@ -21,7 +22,9 @@ export default function AccountMenu() {
   }, []);
 
   if (loading) {
-    return <div className="w-16 h-6 rounded bg-gray-100 animate-pulse" aria-hidden />;
+    return (
+      <div className="w-16 h-6 rounded-md bg-surface-2 animate-pulse" aria-hidden />
+    );
   }
 
   if (!user) {
@@ -30,16 +33,16 @@ export default function AccountMenu() {
         <div className="hidden sm:flex items-center gap-2 text-sm">
           <Link
             href="/login"
-            className="text-gray-900 hover:text-accent transition-colors"
+            className="text-text hover:text-brand-600 transition-colors"
           >
             Iniciar sesión
           </Link>
-          <span className="text-gray-300" aria-hidden>
+          <span className="text-border-strong" aria-hidden>
             |
           </span>
           <Link
             href="/register"
-            className="text-gray-900 hover:text-accent transition-colors"
+            className="text-text hover:text-brand-600 transition-colors"
           >
             Registrarse
           </Link>
@@ -47,76 +50,66 @@ export default function AccountMenu() {
         <Link
           href="/login"
           aria-label="Cuenta"
-          className="sm:hidden p-1 text-gray-900"
+          className="sm:hidden inline-flex items-center justify-center size-11 rounded-pill text-text hover:bg-surface-2 transition"
         >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
+          <Icon name="user" size={20} />
         </Link>
       </>
     );
   }
 
   const firstName =
-    (profile?.displayName || user.displayName || user.email || '')
-      .split(' ')[0] || 'Usuario';
+    (profile?.displayName || user.displayName || user.email || '').split(
+      ' '
+    )[0] || 'Usuario';
 
   return (
     <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 text-sm text-gray-900 hover:text-accent transition-colors"
+        className="flex items-center gap-2 h-11 px-2.5 rounded-pill text-sm text-text hover:bg-surface-2 transition-colors"
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        <span className="hidden lg:inline">Hola, {firstName}</span>
+        <Icon name="user" size={20} />
+        <span className="hidden lg:inline font-medium">Hola, {firstName}</span>
       </button>
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-2 w-48 rounded-lg bg-white shadow-lg border border-gray-200 py-2 z-50"
+          className="absolute right-0 top-full mt-2 w-52 rounded-lg bg-surface shadow-lg border border-border py-2 z-50"
         >
           <Link
             href="/mi-cuenta"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            className="block px-4 py-2 text-sm text-text hover:bg-surface-2"
           >
             Mi cuenta
           </Link>
           <Link
             href="/mi-cuenta?tab=pedidos"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            className="block px-4 py-2 text-sm text-text hover:bg-surface-2"
           >
             Mis pedidos
           </Link>
+          {(profile?.role === 'admin' || profile?.role === 'staff') && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm font-semibold text-brand-600 hover:bg-surface-2"
+            >
+              Admin
+            </Link>
+          )}
           <button
             type="button"
             onClick={async () => {
               await logout();
               setOpen(false);
             }}
-            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            className="block w-full text-left px-4 py-2 text-sm text-text hover:bg-surface-2"
           >
             Cerrar sesión
           </button>

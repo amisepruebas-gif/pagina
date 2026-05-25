@@ -4,33 +4,46 @@ service firebase.storage {
   match /b/{bucket}/o {
 
     function isAuth()     { return request.auth != null; }
-    function role()       { return isAuth() && request.auth.token.role != null ? request.auth.token.role : 'anon'; }
-    function isStaff()    { return role() == 'staff' || role() == 'admin'; }
-    function isAdmin()    { return role() == 'admin'; }
     function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
 
+    // Custom claims via firebase-functions setUserRole — los claims SÍ
+    // están disponibles en Storage rules sin IAM extra (a diferencia de
+    // firestore.get() que requería Cloud Datastore User role).
+    function tokenRole() {
+      return isAuth() ? request.auth.token.get('role', '') : '';
+    }
+    function isStaff() { return tokenRole() in ['staff', 'admin']; }
+    function isAdmin() { return tokenRole() == 'admin'; }
+
+    // Solo imágenes, máximo 5 MB. Aplica a borrados también: si el objeto
+    // se elimina, request.resource es null → la subida válida no se bloquea
+    // pero el delete sí pasa el gate de rol del path.
+    function validImage() {
+      return request.resource == null
+          || (request.resource.size < 5 * 1024 * 1024
+              && request.resource.contentType.matches('image/.*'));
+    }
+
+    // Imágenes subidas desde el admin (productos, categorías, vistas, etc.).
+    match /uploads/{path=**} {
+      allow read:  if true;
+      allow write: if isAdmin() && validImage();
+    }
+
+    // Paths legacy — lectura pública para imágenes ya existentes.
     match /products/{productId}/{path=**} {
       allow read:  if true;
-      allow write: if isAdmin();
-    }
-
-    match /gallery/{path=**} {
-      allow read, write: if isStaff();
-    }
-
-    match /ai-entries/{path=**} {
-      allow read:  if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() && validImage();
     }
 
     match /site/{path=**} {
       allow read:  if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() && validImage();
     }
 
     match /users/{uid}/{path=**} {
       allow read:  if isOwner(uid) || isStaff();
-      allow write: if isOwner(uid);
+      allow write: if isOwner(uid) && validImage();
     }
 
     match /{path=**} {

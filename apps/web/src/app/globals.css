@@ -2,17 +2,202 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ───────────────────────── Design tokens ───────────────────────── */
+
 @layer base {
-  html,
-  body {
-    height: 100%;
+  :root {
+    /* brand */
+    --brand-50:  #E6FBEE;
+    --brand-100: #BFF5D6;
+    --brand-200: #84ECB1;
+    --brand-300: #46DE89;
+    --brand-400: #14D26A;
+    --brand-500: #00C853;
+    --brand-600: #00A847;
+    --brand-700: #008538;
+    --brand-800: #006B2E;
+    --brand-900: #054A22;
+
+    /* accents */
+    --secondary:     #FF5C8A;
+    --secondary-600: #ED3A6E;
+    --accent:        #FFD23F;
+    --accent-2:      #7C3AED;
+
+    /* gradient */
+    --grad-from:  #00D97A;
+    --grad-to:    #C7F864;
+    --grad-angle: 135deg;
+
+    /* status */
+    --success: #16A34A;
+    --error:   #EF4444;
+    --warning: #F59E0B;
+    --info:    #3B82F6;
+
+    /* neutrals (warm) */
+    --bg:            #FAFAF7;
+    --surface:       #FFFFFF;
+    --surface-2:     #F4F4EE;
+    --border:        #E7E7DE;
+    --border-strong: #D0D0C2;
+    --text:          #1A1A14;
+    --text-muted:    #5B5B4D;
+    --text-soft:     #8A8A78;
+    --on-brand:      #FFFFFF;
+
+    /* radii */
+    --r-xs:   4px;
+    --r-sm:   8px;
+    --r-md:   12px;
+    --r-lg:   18px;
+    --r-xl:   28px;
+    --r-2xl:  40px;
+    --r-pill: 999px;
+
+    /* shadows */
+    --sh-xs:  0 1px 2px rgba(20,20,12,0.06);
+    --sh-sm:  0 2px 6px rgba(20,20,12,0.08);
+    --sh-md:  0 8px 20px -4px rgba(20,20,12,0.10), 0 2px 6px rgba(20,20,12,0.05);
+    --sh-lg:  0 24px 48px -12px rgba(20,20,12,0.18), 0 4px 12px rgba(20,20,12,0.06);
+    --sh-brand:     0 14px 30px -10px rgba(0, 200, 83, 0.45);
+    --sh-secondary: 0 14px 30px -10px rgba(255, 92, 138, 0.45);
+
+    /* fonts (overridden by next/font variables in layout.tsx) */
+    --font-display: "Space Grotesk", system-ui, sans-serif;
+    --font-body:    "Sora", system-ui, sans-serif;
+    --font-mono:    "JetBrains Mono", ui-monospace, monospace;
   }
-  body {
-    background: #ffffff;
-    color: #1a1a2e;
+
+  [data-theme="dark"] {
+    --bg:            #0A0A08;
+    --surface:       #14140F;
+    --surface-2:     #1C1C16;
+    --border:        #2B2B22;
+    --border-strong: #3D3D31;
+    --text:          #F5F5EE;
+    --text-muted:    #B5B5A4;
+    --text-soft:     #7E7E6C;
+    --sh-xs: 0 1px 2px rgba(0,0,0,0.5);
+    --sh-sm: 0 2px 6px rgba(0,0,0,0.5);
+    --sh-md: 0 8px 20px -4px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.3);
+    --sh-lg: 0 24px 48px -12px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.3);
   }
-  /* Suprimir el borde azul del search en Webkit */
+
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+  }
+
+  /* Suprimir el borde del search en Webkit */
   input[type='search']::-webkit-search-cancel-button {
     -webkit-appearance: none;
   }
+
+  /* WCAG 2.2 — indicador de foco visible para navegación por teclado. */
+  *:focus-visible {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
+  }
+
+  /* Minimum 44×44 tap targets for any element marked as touch-target */
+  @media (hover: none), (pointer: coarse) {
+    .touch-target {
+      min-width: 44px !important;
+      min-height: 44px !important;
+    }
+  }
+}
+
+@layer components {
+  /* Link "Saltar al contenido" — oculto hasta recibir foco con Tab. */
+  .skip-link {
+    position: absolute;
+    left: 0.5rem;
+    top: -3rem;
+    z-index: 100;
+    background: var(--brand-600);
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: var(--r-sm);
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: top 0.15s ease;
+  }
+  .skip-link:focus {
+    top: 0.5rem;
+  }
+}
+
+/* shimmer skeleton */
+.shimmer {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--border) 50%, var(--surface-2) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* product image placeholder */
+.ph-stripes {
+  background-color: var(--surface-2);
+  background-image: repeating-linear-gradient(135deg,
+    transparent 0px, transparent 14px,
+    rgba(0,0,0,0.04) 14px, rgba(0,0,0,0.04) 15px);
+}
+[data-theme="dark"] .ph-stripes {
+  background-image: repeating-linear-gradient(135deg,
+    transparent 0px, transparent 14px,
+    rgba(255,255,255,0.05) 14px, rgba(255,255,255,0.05) 15px);
+}
+
+/* ─── Quick-actions ProductCard: hover (desktop) vs touch (mobile) ────── */
+.qa-touch-only { display: none; }
+@media (hover: none), (pointer: coarse) {
+  .qa-hover-only { display: none !important; }
+  .qa-touch-only { display: flex !important; }
+}
+
+/* ─── MobileMenu animations ───────────────────────────────────────────── */
+@keyframes mm-fade  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mm-slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes mm-slide-left { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+
+/* ─── FilterDrawer (catálogo móvil) ───────────────────────────────────── */
+@keyframes drawer-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* ─── PriceRange — slider de rango dual ───────────────────────────────── */
+.price-range {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 32px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+.price-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--brand-500);
+  box-shadow: var(--sh-sm);
+  cursor: pointer;
+  pointer-events: auto;
+  margin-top: -9px;
+}
+.price-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--brand-500);
+  box-shadow: var(--sh-sm);
+  cursor: pointer;
+  pointer-events: auto;
 }

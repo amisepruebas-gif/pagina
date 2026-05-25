@@ -1,0 +1,14 @@
+{
+  "name": "@pagina/tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test:rules": "firebase emulators:exec --config ../firebase.emulator.json --only firestore \"vitest run\"",
+    "test:rules:watch": "firebase emulators:exec --config ../firebase.emulator.json --only firestore \"vitest\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.0.0",
+    "vitest": "^2.1.8"
+  }
+}

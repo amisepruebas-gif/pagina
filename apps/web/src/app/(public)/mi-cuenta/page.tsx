@@ -1,96 +1,70 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { logout } from '@/lib/auth';
+import AccountTabs, { type AccountTab } from '@/components/account/AccountTabs';
+import PerfilTab from '@/components/account/PerfilTab';
+import PedidosTab from '@/components/account/PedidosTab';
+import FavoritosTab from '@/components/account/FavoritosTab';
+import DireccionesTab from '@/components/account/DireccionesTab';
+import QuejasTab from '@/components/account/QuejasTab';
+
+const VALID_TABS: AccountTab[] = ['perfil', 'pedidos', 'favoritos', 'direcciones', 'quejas'];
 
 export default function MiCuentaPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <MiCuentaInner />
+    </Suspense>
+  );
+}
+
+function MiCuentaInner() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
+  const params = useSearchParams();
+  const tabParam = params.get('tab');
+  const tab: AccountTab = (VALID_TABS as string[]).includes(tabParam ?? '')
+    ? (tabParam as AccountTab)
+    : 'perfil';
 
   useEffect(() => {
     if (!loading && !user) router.push('/login');
   }, [loading, user, router]);
 
   if (loading || !user) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-20 text-center text-gray-500">
-        Cargando…
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
-      <header className="border-b border-gray-200 pb-6 mb-6">
-        <h1 className="font-display text-3xl md:text-4xl font-bold text-gray-900">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10 md:py-14">
+      <header className="mb-6">
+        <h1 className="font-display font-bold tracking-[-0.03em] text-3xl md:text-4xl">
           Mi cuenta
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-text-muted">
           Hola{profile?.displayName ? `, ${profile.displayName}` : ''}.
         </p>
       </header>
 
-      <section className="space-y-4">
-        <Row label="Correo" value={user.email ?? '—'} />
-        <Row label="Nombre" value={profile?.displayName || user.displayName || '—'} />
-        <Row label="Rol" value={profile?.role ?? 'customer'} />
-        <Row
-          label="Cuenta vinculada con"
-          value={(profile?.providers ?? []).join(', ') || '—'}
-        />
-        <Row label="UID" value={user.uid} mono />
-      </section>
+      <AccountTabs current={tab} />
 
-      <div className="mt-10 flex flex-wrap gap-3">
-        <Link
-          href="/shop"
-          className="rounded-full border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-700 hover:border-accent hover:text-accent"
-        >
-          Seguir comprando
-        </Link>
-        <button
-          type="button"
-          onClick={async () => {
-            await logout();
-            router.push('/');
-          }}
-          className="rounded-full bg-gray-900 text-white px-5 py-2 text-sm font-semibold hover:bg-gray-700"
-        >
-          Cerrar sesión
-        </button>
+      <div className="mt-6">
+        {tab === 'perfil' && <PerfilTab />}
+        {tab === 'pedidos' && <PedidosTab />}
+        {tab === 'favoritos' && <FavoritosTab />}
+        {tab === 'direcciones' && <DireccionesTab />}
+        {tab === 'quejas' && <QuejasTab />}
       </div>
-
-      <p className="mt-10 text-xs text-gray-400">
-        Tabs (pedidos, favoritos, direcciones) llegan en próximas fases.
-      </p>
     </div>
   );
 }
 
-function Row({
-  label,
-  value,
-  mono
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
+function Loading() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
-      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-        {label}
-      </span>
-      <span
-        className={`sm:col-span-2 text-sm text-gray-900 break-all ${
-          mono ? 'font-mono text-xs' : ''
-        }`}
-      >
-        {value}
-      </span>
+    <div className="mx-auto max-w-3xl px-4 py-20 text-center text-text-soft text-sm">
+      Cargando…
     </div>
   );
 }

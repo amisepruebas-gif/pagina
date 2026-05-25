@@ -12,6 +12,9 @@ export interface Product {
   description?: string;
   longDescription?: string;
   price: number;
+  /** Precio de compra (costo interno). No se muestra al cliente. */
+  costPrice?: number;
+  /** Precio anterior tachado en el storefront (para descuentos). */
   originalPrice?: number;
   currency: string;
   stock?: number;
@@ -43,6 +46,7 @@ export interface RawProductDoc {
   description?: string;
   longDescription?: string;
   price?: number | { sale?: number; production?: number; currency?: string };
+  costPrice?: number;
   originalPrice?: number;
   stock?: number;
   isNew?: boolean;
