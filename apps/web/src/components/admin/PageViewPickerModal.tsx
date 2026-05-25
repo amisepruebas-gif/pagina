@@ -44,10 +44,13 @@ export default function PageViewPickerModal({
 
   // Re-fetch cada vez que el modal se abre: si el admin acaba de crear una
   // vista en otra pestaña, queremos verla sin recargar el editor.
+  // Incluimos borradores (`includeInactive: true`) — el admin puede preferir
+  // armar el enlace antes de publicar la vista. Cada borrador queda marcado
+  // con un badge en la UI.
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    getPageViews()
+    getPageViews({ includeInactive: true })
       .then((list) => {
         setViews(list);
       })
@@ -186,6 +189,14 @@ export default function PageViewPickerModal({
                           <span className="font-display font-semibold text-[14px] text-text">
                             {v.name}
                           </span>
+                          {!v.active && (
+                            <span
+                              className="inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-amber-700"
+                              title="Borrador — el enlace no funcionará hasta publicar la vista"
+                            >
+                              Borrador
+                            </span>
+                          )}
                         </div>
                         <code className="block font-mono text-[11px] text-text-soft">
                           {`/v/${v.slug}`}
