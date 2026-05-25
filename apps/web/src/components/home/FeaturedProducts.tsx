@@ -1,10 +1,12 @@
+'use client';
+import { useRef } from 'react';
 import Link from 'next/link';
-import { ProductCard } from '@/components/ui';
+import { IconButton, ProductCard } from '@/components/ui';
 import type { Product } from '@/types/product';
 import type { FeaturedConfig } from '@/types/home-config';
 import { toUiProduct, productHref } from '@/lib/ui-adapters';
 
-/** FeaturedProducts — grid de productos destacados (isFeatured=true). */
+/** FeaturedProducts — carrusel horizontal con scroll-snap, mismo patrón que Recién llegados. */
 export function FeaturedProducts({
   config,
   products
@@ -12,6 +14,10 @@ export function FeaturedProducts({
   config: FeaturedConfig;
   products: Product[];
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scroll = (dir: 1 | -1) =>
+    scrollRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
+
   if (products.length === 0) return null;
 
   return (
@@ -32,11 +38,38 @@ export function FeaturedProducts({
               {config.paragraph}
             </p>
           </div>
+          <div className="hidden sm:flex gap-2">
+            <IconButton
+              variant="secondary"
+              icon="arr-left"
+              label="Anterior"
+              onClick={() => scroll(-1)}
+            />
+            <IconButton
+              variant="secondary"
+              icon="arr-right"
+              label="Siguiente"
+              onClick={() => scroll(1)}
+            />
+          </div>
         </div>
+      </div>
 
-        <div className="grid gap-4 sm:gap-5 grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(250px,1fr))]">
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
+        style={{
+          paddingLeft: 'max(16px, calc((100vw - 1280px)/2 + 24px))',
+          paddingRight: 'max(16px, calc((100vw - 1280px)/2 + 24px))'
+        }}
+      >
+        <div className="flex gap-4 sm:gap-5">
           {products.map((p, i) => (
-            <Link key={p.id} href={productHref(p)} className="block">
+            <Link
+              key={p.id}
+              href={productHref(p)}
+              className="basis-[200px] sm:basis-[260px] md:basis-[280px] shrink-0 snap-start block"
+            >
               <ProductCard variant="canonical" product={toUiProduct(p, i)} />
             </Link>
           ))}
