@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button, Icon, ProductImage } from '@/components/ui';
 import type { Category } from '@/types/category';
 import type { CategoryGridConfig } from '@/types/home-config';
+import { safeHref } from '@/lib/safe-href';
 
 const ACCENTS = ['#FF5C8A', '#00D97A', '#FFD23F', '#7C3AED', '#00BFFF', '#FF6B35'];
 
@@ -30,7 +31,7 @@ export function CategoryGrid({
               </span>
             </h2>
           </div>
-          <Link href={config.cta.href}>
+          <Link href={safeHref(config.cta.href)}>
             <Button variant="ghost" trailingIcon="arr-right">
               {config.cta.label}
             </Button>

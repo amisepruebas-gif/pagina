@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Badge, Button, ProductImage } from '@/components/ui';
 import type { HeroConfig } from '@/types/home-config';
+import { safeHref } from '@/lib/safe-href';
 import { HeroBackgroundSlider } from './HeroBackgroundSlider';
 
 /** Posición y proporción de cada una de las 3 tarjetas del collage. */
@@ -95,12 +96,12 @@ export function HeroSection({ config }: { config: HeroConfig }) {
             </p>
 
             <div className="mt-7 sm:mt-9 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-              <Link href={config.primaryCta.href} className="w-full sm:w-auto">
+              <Link href={safeHref(config.primaryCta.href)} className="w-full sm:w-auto">
                 <Button size="lg" trailingIcon="arr-right" fullWidth className="sm:!w-auto">
                   {config.primaryCta.label}
                 </Button>
               </Link>
-              <Link href={config.secondaryCta.href} className="w-full sm:w-auto">
+              <Link href={safeHref(config.secondaryCta.href)} className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   variant="secondary"
@@ -154,7 +155,7 @@ export function HeroSection({ config }: { config: HeroConfig }) {
                 />
               );
               return card.href ? (
-                <Link key={i} href={card.href} className={cls}>
+                <Link key={i} href={safeHref(card.href)} className={cls}>
                   {image}
                 </Link>
               ) : (

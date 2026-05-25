@@ -5,6 +5,7 @@ import { Button, IconButton, ProductCard } from '@/components/ui';
 import type { Product } from '@/types/product';
 import type { BestSellersConfig } from '@/types/home-config';
 import { toUiProduct, productHref } from '@/lib/ui-adapters';
+import { safeHref } from '@/lib/safe-href';
 
 /** BestSellers — carrusel horizontal con scroll-snap, mismo patrón que Recién llegados. */
 export function BestSellers({
@@ -50,7 +51,7 @@ export function BestSellers({
                 onClick={() => scroll(1)}
               />
             </div>
-            <Link href={config.cta.href}>
+            <Link href={safeHref(config.cta.href)}>
               <Button variant="ghost" trailingIcon="arr-right">
                 {config.cta.label}
               </Button>

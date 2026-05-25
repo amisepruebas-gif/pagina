@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { bannerHref, type ViewModule } from '@/types/page-view';
+import { safeHref } from '@/lib/safe-href';
 
 const ROTATE_MS = 5000;
 
@@ -36,7 +37,7 @@ export default function ViewSlider({ module }: { module: ViewModule }) {
   return (
     <section className="relative">
       {href ? (
-        <Link href={href} className="block">
+        <Link href={safeHref(href)} className="block">
           {slide}
         </Link>
       ) : (

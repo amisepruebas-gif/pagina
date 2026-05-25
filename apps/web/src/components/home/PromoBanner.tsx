@@ -131,7 +131,7 @@ export function PromoBanner({ config }: { config: PromoBannerConfig }) {
                   />
                 );
                 return card.href ? (
-                  <Link key={i} href={card.href} className={cls}>
+                  <Link key={i} href={safeHref(card.href)} className={cls}>
                     {image}
                   </Link>
                 ) : (
