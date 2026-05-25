@@ -27,7 +27,7 @@ export default function ViewBanners({ module }: { module: ViewModule }) {
             const href = bannerHref(b);
             const inner = (
               <div
-                className="aspect-[3/2] rounded-xl overflow-hidden bg-surface-2 bg-cover bg-center border border-border"
+                className="aspect-[10/3] rounded-xl overflow-hidden bg-surface-2 bg-cover bg-center border border-border"
                 style={{ backgroundImage: `url(${b.imageUrl})` }}
               />
             );
