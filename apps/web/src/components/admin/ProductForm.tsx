@@ -25,6 +25,16 @@ interface ProductFormProps {
   subcategories: Subcategory[];
   materials: Material[];
   tags: Tag[];
+  /**
+   * Si se pasa, sobreescribe el flujo default (router.push → lista). Útil
+   * cuando el form vive dentro de un modal: el padre cierra el modal en vez
+   * de navegar.
+   */
+  onSaved?: (id: string) => void;
+  /** Igual que onSaved pero al cancelar / dar atrás. */
+  onCancelOverride?: () => void;
+  /** Cuando true, oculta el breadcrumb del FormShell (el modal ya tiene su propio header). */
+  hideBreadcrumb?: boolean;
 }
 
 const emptyForm: ProductFormValues = {
@@ -53,7 +63,10 @@ export default function ProductForm({
   categories,
   subcategories,
   materials,
-  tags
+  tags,
+  onSaved,
+  onCancelOverride,
+  hideBreadcrumb
 }: ProductFormProps) {
   const router = useRouter();
   const isEdit = !!initial?.id;
@@ -116,6 +129,7 @@ export default function ProductForm({
         );
         setSuccess(true);
         router.refresh();
+        onSaved?.(initial.id);
       } else {
         const newId = await createProduct(values);
         // El producto ya existe; si falla el guardado de imágenes igual
@@ -135,7 +149,11 @@ export default function ProductForm({
           window.alert(
             'El producto se creó correctamente, pero hubo un error al guardar las imágenes adicionales. Vuelve a agregarlas desde esta pantalla de edición.'
           );
-          router.push(`/admin/productos/${newId}`);
+          if (onSaved) {
+            onSaved(newId);
+          } else {
+            router.push(`/admin/productos/${newId}`);
+          }
           router.refresh();
           return;
         }
@@ -144,7 +162,11 @@ export default function ProductForm({
             (u): u is string => Boolean(u)
           )
         );
-        router.push(`/admin/productos/${newId}`);
+        if (onSaved) {
+          onSaved(newId);
+        } else {
+          router.push(`/admin/productos/${newId}`);
+        }
         router.refresh();
       }
     } catch (err) {
@@ -163,11 +185,15 @@ export default function ProductForm({
 
   return (
     <FormShell
-      breadcrumb={[
-        { label: 'Admin', href: '/admin' },
-        { label: 'Productos', href: '/admin/productos' },
-        { label: isEdit ? (initial?.name ?? 'Editar') : 'Nuevo' }
-      ]}
+      breadcrumb={
+        hideBreadcrumb
+          ? undefined
+          : [
+              { label: 'Admin', href: '/admin' },
+              { label: 'Productos', href: '/admin/productos' },
+              { label: isEdit ? (initial?.name ?? 'Editar') : 'Nuevo' }
+            ]
+      }
       title={isEdit ? `Editar — ${initial?.name ?? 'producto'}` : 'Nuevo producto'}
       description={
         isEdit
@@ -176,7 +202,8 @@ export default function ProductForm({
       }
       onCancel={async () => {
         await imageCleanup.rollback();
-        router.push('/admin/productos');
+        if (onCancelOverride) onCancelOverride();
+        else router.push('/admin/productos');
       }}
       onSave={handleSubmit}
       saving={submitting}

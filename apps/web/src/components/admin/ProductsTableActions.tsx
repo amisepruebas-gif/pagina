@@ -7,10 +7,13 @@ import { setProductActive } from '@/lib/admin/products-admin';
 
 export default function ProductsTableActions({
   productId,
-  active
+  active,
+  onEdit
 }: {
   productId: string;
   active: boolean;
+  /** Si se pasa, abre el modal de edición en lugar de navegar. */
+  onEdit?: (productId: string) => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -41,7 +44,11 @@ export default function ProductsTableActions({
         icon="grid"
         label="Editar"
         size="sm"
-        onClick={() => router.push(`/admin/productos/${productId}`)}
+        onClick={() =>
+          onEdit
+            ? onEdit(productId)
+            : router.push(`/admin/productos/${productId}`)
+        }
       />
       <IconButton
         variant="ghost"

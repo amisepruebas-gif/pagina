@@ -7,13 +7,33 @@ import { StockBadge } from './StockBadge';
 import ProductsTableActions from './ProductsTableActions';
 
 /** AdminProductCard — tarjeta de un producto para la vista en cuadrícula. */
-export function AdminProductCard({ product }: { product: Product }) {
+export function AdminProductCard({
+  product,
+  onEdit
+}: {
+  product: Product;
+  /** Si se pasa, hace que tanto la imagen como el nombre abran el modal. */
+  onEdit?: (productId: string) => void;
+}) {
+  // Modo modal: clicks de la card disparan onEdit en vez de navegar.
+  const ImageWrap = onEdit
+    ? ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <button
+          type="button"
+          onClick={() => onEdit(product.id)}
+          className={`${className ?? ''} text-left`}
+        >
+          {children}
+        </button>
+      )
+    : ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <Link href={`/admin/productos/${product.id}`} className={className}>
+          {children}
+        </Link>
+      );
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-border bg-surface">
-      <Link
-        href={`/admin/productos/${product.id}`}
-        className="relative block aspect-square bg-surface-2"
-      >
+      <ImageWrap className="relative block aspect-square bg-surface-2">
         {product.primaryImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -33,15 +53,12 @@ export function AdminProductCard({ product }: { product: Product }) {
             </Badge>
           </span>
         )}
-      </Link>
+      </ImageWrap>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <Link
-          href={`/admin/productos/${product.id}`}
-          className="line-clamp-2 font-display text-sm font-semibold leading-tight transition hover:text-brand-700"
-        >
+        <ImageWrap className="line-clamp-2 font-display text-sm font-semibold leading-tight transition hover:text-brand-700">
           {product.name}
-        </Link>
+        </ImageWrap>
 
         {(product.isFeatured || product.isNew) && (
           <div className="flex flex-wrap items-center gap-1.5">
@@ -78,6 +95,7 @@ export function AdminProductCard({ product }: { product: Product }) {
           <ProductsTableActions
             productId={product.id}
             active={product.active}
+            onEdit={onEdit}
           />
         </div>
       </div>

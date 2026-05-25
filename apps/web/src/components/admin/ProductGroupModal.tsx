@@ -43,11 +43,14 @@ export function sortProducts(list: Product[], sort: ProductSort): Product[] {
 export function ProductGroupModal({
   groupName,
   products,
-  onClose
+  onClose,
+  onEdit
 }: {
   groupName: string;
   products: Product[];
   onClose: () => void;
+  /** Si se pasa, las cards dentro del modal abren el editor en modal. */
+  onEdit?: (productId: string) => void;
 }) {
   const [sort, setSort] = useState<ProductSort>('recent');
 
@@ -113,7 +116,7 @@ export function ProductGroupModal({
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {sorted.map((p) => (
-                <AdminProductCard key={p.id} product={p} />
+                <AdminProductCard key={p.id} product={p} onEdit={onEdit} />
               ))}
             </div>
           )}

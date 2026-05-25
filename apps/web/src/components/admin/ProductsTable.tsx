@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { Badge, Button, Icon, Input, Select } from '@/components/ui';
 import type { Product } from '@/types/product';
 import type { Category } from '@/types/category';
@@ -11,6 +10,7 @@ import { StockBadge } from './StockBadge';
 import ProductsTableActions from './ProductsTableActions';
 import { AdminProductCard } from './AdminProductCard';
 import { ProductGroupModal } from './ProductGroupModal';
+import EditProductModal from './EditProductModal';
 
 const LOW_STOCK_THRESHOLD = 5;
 const PAGE_SIZE = 20;
@@ -30,103 +30,112 @@ function groupKeyOf(p: Product, by: 'category' | 'subcategory'): string {
   return id || '__none__';
 }
 
-/** Columnas de la tabla de productos. */
-const PRODUCT_COLUMNS: DataTableColumn<Product>[] = [
-  {
-    key: 'name',
-    label: 'Producto',
-    render: (p) => (
-      <div className="flex items-center gap-2.5">
-        {p.primaryImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.primaryImageUrl}
-            alt=""
-            className="size-9 shrink-0 rounded-sm bg-surface-2 object-cover"
-          />
-        ) : (
-          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm bg-surface-2 text-text-soft">
-            <Icon name="grid" size={16} strokeWidth={1.8} />
-          </span>
-        )}
-        <div className="min-w-0">
-          <Link
-            href={`/admin/productos/${p.id}`}
-            className="block max-w-[240px] truncate font-display font-semibold transition hover:text-brand-700"
-          >
-            {p.name}
-          </Link>
-          <div className="inline-flex flex-wrap items-center gap-1.5 text-[11px] text-text-soft">
-            {p.isFeatured && (
-              <Badge tone="brand" size="xs">
-                Destacado
-              </Badge>
-            )}
-            {p.isNew && (
-              <Badge tone="accent" size="xs">
-                Nuevo
-              </Badge>
-            )}
-            {!p.active && (
-              <Badge tone="neutral" size="xs">
-                Inactivo
-              </Badge>
-            )}
-            {!p.isFeatured && !p.isNew && p.active && (
-              <span className="font-mono">{p.slug}</span>
-            )}
+/** Construye las columnas capturando el callback de edición en el closure. */
+function buildColumns(
+  onEdit: (productId: string) => void
+): DataTableColumn<Product>[] {
+  return [
+    {
+      key: 'name',
+      label: 'Producto',
+      render: (p) => (
+        <div className="flex items-center gap-2.5">
+          {p.primaryImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={p.primaryImageUrl}
+              alt=""
+              className="size-9 shrink-0 rounded-sm bg-surface-2 object-cover"
+            />
+          ) : (
+            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm bg-surface-2 text-text-soft">
+              <Icon name="grid" size={16} strokeWidth={1.8} />
+            </span>
+          )}
+          <div className="min-w-0">
+            <button
+              type="button"
+              onClick={() => onEdit(p.id)}
+              className="block max-w-[240px] truncate text-left font-display font-semibold transition hover:text-brand-700"
+            >
+              {p.name}
+            </button>
+            <div className="inline-flex flex-wrap items-center gap-1.5 text-[11px] text-text-soft">
+              {p.isFeatured && (
+                <Badge tone="brand" size="xs">
+                  Destacado
+                </Badge>
+              )}
+              {p.isNew && (
+                <Badge tone="accent" size="xs">
+                  Nuevo
+                </Badge>
+              )}
+              {!p.active && (
+                <Badge tone="neutral" size="xs">
+                  Inactivo
+                </Badge>
+              )}
+              {!p.isFeatured && !p.isNew && p.active && (
+                <span className="font-mono">{p.slug}</span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    )
-  },
-  {
-    key: 'sku',
-    label: 'SKU',
-    render: (p) => (
-      <code className="font-mono text-xs text-text-muted">
-        {p.sku ?? '—'}
-      </code>
-    )
-  },
-  {
-    key: 'price',
-    label: 'Precio',
-    align: 'right',
-    render: (p) => (
-      <div className="text-right">
-        <div className="font-display font-bold">${p.price.toFixed(2)}</div>
-        {typeof p.originalPrice === 'number' && (
-          <div className="text-[11px] text-text-soft line-through">
-            ${p.originalPrice.toFixed(2)}
-          </div>
-        )}
-      </div>
-    )
-  },
-  {
-    key: 'stock',
-    label: 'Stock',
-    align: 'center',
-    render: (p) =>
-      typeof p.stock === 'number' ? (
-        <StockBadge stock={p.stock} />
-      ) : (
-        <span className="text-text-soft">—</span>
       )
-  },
-  {
-    key: 'actions',
-    label: 'Acciones',
-    align: 'right',
-    width: '160px',
-    render: (p) => (
-      <div className="inline-flex justify-end">
-        <ProductsTableActions productId={p.id} active={p.active} />
-      </div>
-    )
-  }
-];
+    },
+    {
+      key: 'sku',
+      label: 'SKU',
+      render: (p) => (
+        <code className="font-mono text-xs text-text-muted">
+          {p.sku ?? '—'}
+        </code>
+      )
+    },
+    {
+      key: 'price',
+      label: 'Precio',
+      align: 'right',
+      render: (p) => (
+        <div className="text-right">
+          <div className="font-display font-bold">${p.price.toFixed(2)}</div>
+          {typeof p.originalPrice === 'number' && (
+            <div className="text-[11px] text-text-soft line-through">
+              ${p.originalPrice.toFixed(2)}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'stock',
+      label: 'Stock',
+      align: 'center',
+      render: (p) =>
+        typeof p.stock === 'number' ? (
+          <StockBadge stock={p.stock} />
+        ) : (
+          <span className="text-text-soft">—</span>
+        )
+    },
+    {
+      key: 'actions',
+      label: 'Acciones',
+      align: 'right',
+      width: '160px',
+      render: (p) => (
+        <div className="inline-flex justify-end">
+          <ProductsTableActions
+            productId={p.id}
+            active={p.active}
+            onEdit={onEdit}
+          />
+        </div>
+      )
+    }
+  ];
+}
 
 /**
  * ProductsTable — vista de productos del admin. Soporta dos estilos de
@@ -147,6 +156,11 @@ export default function ProductsTable({
     key: string;
     name: string;
   } | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const productColumns = useMemo(
+    () => buildColumns((id) => setEditingId(id)),
+    []
+  );
 
   const lowStock = useMemo(
     () =>
@@ -331,7 +345,7 @@ export default function ProductsTable({
       {groupBy === 'none' ? (
         viewMode === 'list' ? (
           <DataTable<Product>
-            columns={PRODUCT_COLUMNS}
+            columns={productColumns}
             rows={pageRows}
             empty={{
               icon: 'grid',
@@ -370,7 +384,11 @@ export default function ProductsTable({
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {pageRows.map((p) => (
-                <AdminProductCard key={p.id} product={p} />
+                <AdminProductCard
+                  key={p.id}
+                  product={p}
+                  onEdit={setEditingId}
+                />
               ))}
             </div>
             <PaginationBar
@@ -436,6 +454,14 @@ export default function ProductsTable({
           groupName={modalGroup.name}
           products={modalProducts}
           onClose={() => setModalGroup(null)}
+          onEdit={setEditingId}
+        />
+      )}
+
+      {editingId && (
+        <EditProductModal
+          productId={editingId}
+          onClose={() => setEditingId(null)}
         />
       )}
     </div>
