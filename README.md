@@ -93,6 +93,17 @@ pnpm deploy:rules      # solo Firestore rules + Storage rules
 pnpm deploy:functions  # solo Cloud Functions (requiere Blaze)
 ```
 
+## Subida de imágenes (convención del admin)
+
+**Toda imagen subida desde el admin pasa primero por `compressImage`** (en `apps/web/src/lib/admin/compress-image.ts`). La política, no negociable, es:
+
+- **Si el archivo original pesa < 1 MB** → se sube tal cual, sin comprimir. Mantiene la calidad del usuario cuando el peso ya es razonable.
+- **Si pesa ≥ 1 MB** → se fuerza a `image/webp` con peso final < 800 KB, intentando preservar la mejor resolución visual posible:
+  1. Primero se baja calidad WebP iterativamente (0.92 → 0.5).
+  2. Solo cuando ningún nivel de calidad alcanza la meta, se reducen las dimensiones (factor 0.85) y se vuelve a probar.
+
+El único punto de subida del admin es `uploadImage()` en `apps/web/src/lib/admin/uploads.ts`. **No introducir uploaders alternativos**: cualquier formulario nuevo que suba imágenes debe pasar por ese helper para que el filtro sea uniforme. Si el filtro falla (imagen corrupta, browser sin soporte WebP), se sube el original — el upload nunca aborta por la compresión.
+
 ## Scripts útiles
 
 - `pnpm dev` — Next.js en `apps/web`
