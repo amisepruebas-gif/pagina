@@ -2,3 +2,9 @@ packages:
   - "apps/*"
   - "functions"
   - "tests"
+
+# NOTA: el override de postcss para resolver CVE moderate
+# (GHSA-qx2v-qp2m-jg93) se intentó aquí pero pnpm 9.12 no aplica
+# overrides a transitivas pinneadas por Next (next@16.2.6 > postcss@8.4.31).
+# Issue documentado en auditoria/06-calidad-codigo.md.
+# Se resolverá cuando Next 16.3+ bumpee postcss.

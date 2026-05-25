@@ -87,9 +87,12 @@ Login/register/forgot-password sí los protege Firebase Auth con su rate-limit p
 **Pendiente** (no aplicado hoy): middleware con rate-limit en memoria (per-instancia) o Upstash Ratelimit (per-edge). Sugerencia: 10 req/min por IP en `/api/checkout/session`. Va al backlog.
 
 **🟡 MEDIA — Dependencias con CVE moderate (transitivas)**
-- `postcss <8.5.10` (CVE: XSS via `</style>` unescaped). Es transitive de Next 16. Build-time, riesgo bajo en runtime.
+- `postcss <8.5.10` (CVE: XSS via `</style>` unescaped). Transitive de Next 16.2.6 (pinneada internamente). Build-time, riesgo bajo en runtime.
 - `uuid <11.1.1` × 3 paths (CVE-2026-41907, buffer bounds). Transitive de `firebase-admin` → `gaxios`. Solo afecta `uuid.v3/v5/v6` con buffer custom — nuestro código no lo invoca.
-**Fix aplicado**: `pnpm.overrides` para `postcss` (minor bump seguro). Para `uuid` no fuerzo a v11 porque es major bump dentro de google-auth-library — riesgo de romper firebase-admin. Esperar al próximo bump de firebase-admin.
+
+**Fix intentado, no aplicado**: en el commit `0b04bc2` declaré que `pnpm.overrides` resolvía el CVE de postcss. **No fue así.** Verificación posterior (ver `auditoria/06-calidad-codigo.md`): pnpm 9.12 no aplica overrides a transitivas pinneadas por Next, ni en `package.json#pnpm.overrides` (deprecado) ni en `pnpm-workspace.yaml` (sintaxis con o sin selector, lockfile regenerado, todo intentado).
+
+**Estado real**: el CVE de postcss sigue ahí. Riesgo: bajísimo (CSS no es input de usuario, es build-time). Se resolverá automáticamente cuando Next 16.3+ bumpee postcss internamente. Para `uuid` mismo escenario.
 
 **🟢 BAJA — `userEmail` del cliente no se valida contra `userId`**
 En `/api/checkout/session`, el cliente manda `userEmail`. El servidor lo confía. Un usuario logueado podría mandar el email de otro y Stripe enviará el recibo allí. Riesgo bajo (no exfiltra nada, solo confunde recibos). Mitigación natural: el flujo siempre toma `user.email` del auth state, así que solo un atacante con DevTools manualmente puede manipularlo.
@@ -111,8 +114,8 @@ Hay site key reservada (`NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY` en `.env.loc
 ## Resumen
 | Severidad | Encontradas | Resueltas hoy | Pendientes |
 |-----------|-------------|---------------|------------|
-| Alta | 1 | 1 | 0 |
-| Media | 3 | 2 | 1 (rate-limit) |
+| Alta | 1 | 1 (headers) | 0 |
+| Media | 3 | 1 (PII log) | 2 (rate-limit, CVE postcss bloqueado upstream) |
 | Baja | 3 | 0 | 3 |
 
 Estructura general muy sana — reglas Firestore son de las mejores que he visto en proyectos pequeños (denial-by-default, blindaje de campos sensibles, claims + fallback). Webhook Stripe impecable: firma + idempotencia + items server-side. Lo que falta es la capa perimetral (headers, rate-limit, CSP, App Check) que es backlog clásico para una v1.

@@ -15,12 +15,12 @@ No es una lista de tareas para hacer todas a la vez — es un mapa para ir revis
 
 | # | Categoría | Estado |
 |---|-----------|--------|
-| 01 | [Seguridad](01-seguridad.md) | Hecho (fixes aplicados, backlog menor) |
+| 01 | [Seguridad](01-seguridad.md) | Hecho (headers + PII log; CVE postcss no aplicó, ver 06) |
 | 02 | [Performance](02-performance.md) | Hecho (ISR + images.formats; Lighthouse pendiente interactivo) |
 | 03 | [SEO](03-seo.md) | Hecho (canonical + sitemap; backlog: rutas /c/[slug]) |
 | 04 | [Accesibilidad](04-accesibilidad.md) | Pendiente |
 | 05 | [Testing y QA](05-testing.md) | Pendiente |
-| 06 | [Calidad de código y DX](06-calidad-codigo.md) | Pendiente |
+| 06 | [Calidad de código y DX](06-calidad-codigo.md) | Hecho (lint roto documentado; código muerto en backlog) |
 | 07 | [Observabilidad](07-observabilidad.md) | Pendiente |
 | 08 | [UX y flujos críticos](08-ux-flujos.md) | Pendiente |
 | 09 | [Integridad de datos (Firestore)](09-data-integrity.md) | Pendiente |
@@ -28,6 +28,10 @@ No es una lista de tareas para hacer todas a la vez — es un mapa para ir revis
 | 11 | [Backup y recuperación](11-backup-recovery.md) | Pendiente |
 | 12 | [Operaciones y costos](12-operaciones-costos.md) | Pendiente |
 | 13 | [Estándar e-commerce (Baymard)](13-estandar-ecommerce.md) | Pendiente |
+
+## Orden seguido
+
+Las categorías 04, 05, 08 y 13 se posponen — requieren navegación interactiva (axe DevTools, Playwright, sesión manual de QA, gap analysis Baymard) que no se puede hacer solo desde el código. El orden que se sigue: 01 → 02 → 03 → 06 (pieza más auditable estática) → 07/09/10/11/12 (siguen, todas tienen pieza estática).
 
 ## Cómo usarlo
 
