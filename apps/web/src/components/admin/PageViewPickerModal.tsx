@@ -11,8 +11,15 @@ interface PageViewPickerModalProps {
   onClose: () => void;
   /** Slug actualmente apuntado (sin el `/v/` — null si no hay). */
   selectedSlug: string | null;
-  /** Se llama al pulsar "Listo" con el path final `/v/<slug>`. */
-  onConfirm: (href: string) => void;
+  /**
+   * Se llama al pulsar "Listo". El formato depende de `returnFormat`:
+   * - 'path' (default) → `/v/<slug>` listo para usar como href.
+   * - 'slug' → solo el slug, para casos donde el caller arma el href
+   *   por su cuenta (p. ej. el `linkValue` de un banner con
+   *   `linkType='vista'`, donde `bannerHref()` ya antepone `/v/`).
+   */
+  onConfirm: (value: string) => void;
+  returnFormat?: 'path' | 'slug';
 }
 
 /**
@@ -24,7 +31,8 @@ export default function PageViewPickerModal({
   open,
   onClose,
   selectedSlug,
-  onConfirm
+  onConfirm,
+  returnFormat = 'path'
 }: PageViewPickerModalProps) {
   const [views, setViews] = useState<PageView[]>([]);
   const [loading, setLoading] = useState(false);
@@ -72,7 +80,7 @@ export default function PageViewPickerModal({
   function handleConfirm() {
     const view = views.find((v) => v.id === pickedId);
     if (!view) return;
-    onConfirm(`/v/${view.slug}`);
+    onConfirm(returnFormat === 'slug' ? view.slug : `/v/${view.slug}`);
     onClose();
   }
 

@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+import { Icon } from '@/components/ui';
 import ProductPickerButton from '../ProductPickerButton';
 import ImageInput from '../ImageInput';
+import PageViewPickerModal from '../PageViewPickerModal';
 import { Field, TextInput, ColorInput, SelectInput } from './editor-widgets';
 import { useHomeEdit } from './HomeEditContext';
 import {
@@ -71,6 +74,45 @@ function PromoConfigFields({
         />
       </Field>
     </>
+  );
+}
+
+/**
+ * Cuando un banner usa `linkType='vista'`, ofrecemos los dos modos: text
+ * libre con el slug + botón que abre el modal selector. El modal devuelve
+ * solo el slug (no el path completo) porque `bannerHref()` ya antepone /v/.
+ */
+function BannerViewLinkInput({
+  value,
+  onChange
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <TextInput
+        value={value}
+        onChange={onChange}
+        placeholder="slug de la vista"
+      />
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border-strong bg-surface px-3 py-2 text-[12px] font-display font-semibold text-text transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700"
+      >
+        <Icon name="grid" size={13} strokeWidth={2.2} />
+        Seleccionar página creada
+      </button>
+      <PageViewPickerModal
+        open={open}
+        onClose={() => setOpen(false)}
+        selectedSlug={value || null}
+        onConfirm={onChange}
+        returnFormat="slug"
+      />
+    </div>
   );
 }
 
@@ -151,19 +193,24 @@ function BannersEditor({
               </Field>
               {banner.linkType && (
                 <Field label="Destino del enlace">
-                  <TextInput
-                    value={banner.linkValue ?? ''}
-                    onChange={(v) => update(index, { linkValue: v })}
-                    placeholder={
-                      banner.linkType === 'url'
-                        ? 'https://…'
-                        : banner.linkType === 'producto'
-                          ? 'slug del producto'
-                          : banner.linkType === 'vista'
-                            ? 'slug de la vista'
+                  {banner.linkType === 'vista' ? (
+                    <BannerViewLinkInput
+                      value={banner.linkValue ?? ''}
+                      onChange={(v) => update(index, { linkValue: v })}
+                    />
+                  ) : (
+                    <TextInput
+                      value={banner.linkValue ?? ''}
+                      onChange={(v) => update(index, { linkValue: v })}
+                      placeholder={
+                        banner.linkType === 'url'
+                          ? 'https://…'
+                          : banner.linkType === 'producto'
+                            ? 'slug del producto'
                             : 'id de la categoría'
-                    }
-                  />
+                      }
+                    />
+                  )}
                 </Field>
               )}
             </div>
