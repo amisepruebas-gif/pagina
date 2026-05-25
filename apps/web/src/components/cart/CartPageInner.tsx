@@ -126,9 +126,17 @@ export default function CartPageInner() {
           couponCode: coupon?.discount.code ?? null
         })
       });
-      const data = (await res.json()) as { url?: string; error?: string };
+      const raw = await res.text();
+      let data: { url?: string; error?: string } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as typeof data) : {};
+      } catch {
+        // Respuesta no-JSON (HTML de error genérico, body vacío, etc.).
+      }
       if (!res.ok || !data.url) {
-        throw new Error(data.error ?? 'No se pudo iniciar el pago');
+        throw new Error(
+          data.error ?? `No se pudo iniciar el pago (HTTP ${res.status})`
+        );
       }
       console.log('[CHECKOUT] redirigiendo a Stripe');
       window.location.href = data.url;

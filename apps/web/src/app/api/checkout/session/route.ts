@@ -24,6 +24,17 @@ interface IncomingBody {
  * Devuelve { url } para redirigir al cliente.
  */
 export async function POST(req: Request) {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('[CHECKOUT] STRIPE_SECRET_KEY no configurado');
+    return NextResponse.json(
+      {
+        error:
+          'Pagos no disponibles: falta configurar Stripe en el servidor. Contacta al administrador.'
+      },
+      { status: 503 }
+    );
+  }
+
   let body: IncomingBody;
   try {
     body = (await req.json()) as IncomingBody;
@@ -35,6 +46,21 @@ export async function POST(req: Request) {
   if (items.length === 0) {
     return NextResponse.json({ error: 'Carrito vacío' }, { status: 400 });
   }
+
+  try {
+    return await createCheckoutSession(req, body);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Error inesperado';
+    console.error('[CHECKOUT] error en sesión', message, err);
+    return NextResponse.json(
+      { error: `No se pudo iniciar el pago: ${message}` },
+      { status: 500 }
+    );
+  }
+}
+
+async function createCheckoutSession(req: Request, body: IncomingBody) {
+  const items = body.items ?? [];
 
   // Validar cantidades
   for (const i of items) {
