@@ -17,7 +17,7 @@ No es una lista de tareas para hacer todas a la vez — es un mapa para ir revis
 |---|-----------|--------|
 | 01 | [Seguridad](01-seguridad.md) | Hecho (fixes aplicados, backlog menor) |
 | 02 | [Performance](02-performance.md) | Hecho (ISR + images.formats; Lighthouse pendiente interactivo) |
-| 03 | [SEO](03-seo.md) | Pendiente |
+| 03 | [SEO](03-seo.md) | Hecho (canonical + sitemap; backlog: rutas /c/[slug]) |
 | 04 | [Accesibilidad](04-accesibilidad.md) | Pendiente |
 | 05 | [Testing y QA](05-testing.md) | Pendiente |
 | 06 | [Calidad de código y DX](06-calidad-codigo.md) | Pendiente |

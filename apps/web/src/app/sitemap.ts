@@ -16,11 +16,11 @@ function baseUrl(): string {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = baseUrl();
 
+  // Las rutas de auth (/login, /register) viven en robots.ts como disallow.
+  // No tiene sentido listarlas en el sitemap también (señal mixta a Google).
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${base}/shop`, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${base}/login`, changeFrequency: 'yearly', priority: 0.2 },
-    { url: `${base}/register`, changeFrequency: 'yearly', priority: 0.2 }
+    { url: `${base}/shop`, changeFrequency: 'daily', priority: 0.9 }
   ];
 
   try {

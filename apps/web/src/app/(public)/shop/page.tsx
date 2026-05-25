@@ -10,7 +10,10 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Tienda',
-  description: 'Explora el catálogo completo de productos.'
+  description: 'Explora el catálogo completo de productos.',
+  // Cualquier variante con filtros (?cat=, ?sale=) apunta al listado base
+  // para que Google no compita el listado contra sí mismo.
+  alternates: { canonical: '/shop' }
 };
 
 interface ShopSearchParams {
