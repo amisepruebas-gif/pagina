@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { Badge, Icon } from '@/components/ui';
 import type { Product } from '@/types/product';
 import { StockBadge } from './StockBadge';
@@ -15,25 +16,9 @@ export function AdminProductCard({
   /** Si se pasa, hace que tanto la imagen como el nombre abran el modal. */
   onEdit?: (productId: string) => void;
 }) {
-  // Modo modal: clicks de la card disparan onEdit en vez de navegar.
-  const ImageWrap = onEdit
-    ? ({ children, className }: { children: React.ReactNode; className?: string }) => (
-        <button
-          type="button"
-          onClick={() => onEdit(product.id)}
-          className={`${className ?? ''} text-left`}
-        >
-          {children}
-        </button>
-      )
-    : ({ children, className }: { children: React.ReactNode; className?: string }) => (
-        <Link href={`/admin/productos/${product.id}`} className={className}>
-          {children}
-        </Link>
-      );
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-border bg-surface">
-      <ImageWrap className="relative block aspect-square bg-surface-2">
+      <ClickWrap product={product} onEdit={onEdit} className="relative block aspect-square bg-surface-2">
         {product.primaryImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -53,12 +38,16 @@ export function AdminProductCard({
             </Badge>
           </span>
         )}
-      </ImageWrap>
+      </ClickWrap>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <ImageWrap className="line-clamp-2 font-display text-sm font-semibold leading-tight transition hover:text-brand-700">
+        <ClickWrap
+          product={product}
+          onEdit={onEdit}
+          className="line-clamp-2 font-display text-sm font-semibold leading-tight transition hover:text-brand-700"
+        >
           {product.name}
-        </ImageWrap>
+        </ClickWrap>
 
         {(product.isFeatured || product.isNew) && (
           <div className="flex flex-wrap items-center gap-1.5">
@@ -100,5 +89,38 @@ export function AdminProductCard({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Wrap clickable estable — definido a nivel de módulo para no redefinirse
+ * en cada render del padre. Botón cuando hay `onEdit`, Link si no.
+ */
+function ClickWrap({
+  product,
+  onEdit,
+  className,
+  children
+}: {
+  product: Product;
+  onEdit?: (productId: string) => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  if (onEdit) {
+    return (
+      <button
+        type="button"
+        onClick={() => onEdit(product.id)}
+        className={`${className ?? ''} text-left`}
+      >
+        {children}
+      </button>
+    );
+  }
+  return (
+    <Link href={`/admin/productos/${product.id}`} className={className}>
+      {children}
+    </Link>
   );
 }

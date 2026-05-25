@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createProduct,
@@ -35,6 +35,15 @@ interface ProductFormProps {
   onCancelOverride?: () => void;
   /** Cuando true, oculta el breadcrumb del FormShell (el modal ya tiene su propio header). */
   hideBreadcrumb?: boolean;
+  /**
+   * El padre (modal) registra el rollback de imágenes y un flag de dirty
+   * para poder limpiar al cerrar sin guardar. Si no se pasa, el form opera
+   * como antes.
+   */
+  onMountCleanupHandle?: (handle: {
+    rollback: () => Promise<void>;
+    isDirty: () => boolean;
+  }) => void;
 }
 
 const emptyForm: ProductFormValues = {
@@ -66,7 +75,8 @@ export default function ProductForm({
   tags,
   onSaved,
   onCancelOverride,
-  hideBreadcrumb
+  hideBreadcrumb,
+  onMountCleanupHandle
 }: ProductFormProps) {
   const router = useRouter();
   const isEdit = !!initial?.id;
@@ -75,19 +85,35 @@ export default function ProductForm({
     ...emptyForm,
     ...initial
   });
-  const [additionalImages, setAdditionalImages] = useState<string[]>(
+  const [additionalImages, setAdditionalImagesState] = useState<string[]>(
     initialImages ?? []
   );
+  const setAdditionalImages: typeof setAdditionalImagesState = (next) => {
+    setAdditionalImagesState(next);
+    setTouched(true);
+  };
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [touched, setTouched] = useState(false);
   const imageCleanup = useImageCleanup();
+
+  // Expone rollback + dirty-flag al padre (modal) para que pueda limpiar
+  // si el usuario cierra con X o Esc sin guardar.
+  useEffect(() => {
+    if (!onMountCleanupHandle) return;
+    onMountCleanupHandle({
+      rollback: imageCleanup.rollback,
+      isDirty: () => touched
+    });
+  }, [onMountCleanupHandle, imageCleanup.rollback, touched]);
 
   function setField<K extends keyof ProductFormValues>(
     key: K,
     val: ProductFormValues[K]
   ) {
     setValues((v) => ({ ...v, [key]: val }));
+    setTouched(true);
   }
 
   // Subcategorías filtradas por la categoría actualmente seleccionada
@@ -128,6 +154,7 @@ export default function ProductForm({
           )
         );
         setSuccess(true);
+        setTouched(false);
         router.refresh();
         onSaved?.(initial.id);
       } else {

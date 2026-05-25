@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -43,8 +43,30 @@ export default function EditProductModal({
   const [data, setData] = useState<LoadedData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  // Handle del ProductForm — permite rollback de imágenes y check de cambios
+  // al cerrar con X / Esc / Cancelar.
+  const formHandle = useRef<{
+    rollback: () => Promise<void>;
+    isDirty: () => boolean;
+  } | null>(null);
 
   useEffect(() => setMounted(true), []);
+
+  /** Cierra pidiendo confirm si hay cambios y haciendo rollback siempre. */
+  const closeWithCleanup = useCallback(async () => {
+    if (formHandle.current?.isDirty()) {
+      const ok = window.confirm(
+        'Tienes cambios sin guardar. ¿Cerrar de todos modos?'
+      );
+      if (!ok) return;
+    }
+    try {
+      await formHandle.current?.rollback();
+    } catch (err) {
+      console.error('[EditProductModal] rollback fail', err);
+    }
+    onClose();
+  }, [onClose]);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,14 +142,15 @@ export default function EditProductModal({
     };
   }, [productId]);
 
-  // Esc cierra. Lo manejamos aquí porque el FormShell de adentro no lo hace.
+  // Esc cierra — pasa por closeWithCleanup para preservar imágenes huérfanas
+  // y advertir al usuario de cambios sin guardar.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') closeWithCleanup();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [closeWithCleanup]);
 
   if (!mounted) return null;
 
@@ -146,7 +169,7 @@ export default function EditProductModal({
           <h2 className="font-display text-base font-bold">Editar producto</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeWithCleanup}
             aria-label="Cerrar"
             className="rounded-md p-1.5 text-text-muted transition hover:bg-surface-2 hover:text-text"
           >
@@ -173,7 +196,10 @@ export default function EditProductModal({
               tags={data.tags}
               hideBreadcrumb
               onSaved={() => onClose()}
-              onCancelOverride={onClose}
+              onCancelOverride={closeWithCleanup}
+              onMountCleanupHandle={(h) => {
+                formHandle.current = h;
+              }}
             />
           )}
         </div>
