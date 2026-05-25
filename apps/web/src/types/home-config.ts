@@ -99,6 +99,9 @@ export interface FeaturedConfig {
 /** Tipo de capa de color sobre el banner: degradado entre 2 colores o sólido. */
 export type PromoCoverType = 'gradient' | 'solid';
 
+/** Toggle binario para opciones decorativas (sombras, glow, etc.). */
+export type ToggleMode = 'on' | 'off';
+
 export interface PromoBannerConfig {
   badge: string;
   title: string;
@@ -161,6 +164,22 @@ export interface FlashSaleConfig {
   coverOpacity: number;
   /** Color de la mancha decorativa (esquina superior izquierda). */
   blob1Color: string;
+  /**
+   * Sombra del título ("Termina en…"). Opcional y graduable.
+   * Cuando `titleShadow === 'off'`, no se aplica nada al texto.
+   */
+  titleShadow: ToggleMode;
+  titleShadowColor: string;
+  titleShadowBlur: number; // 0–40
+  titleShadowOpacity: number; // 0–100
+  /**
+   * Sombra de los cards del contador (horas / minutos / segundos).
+   * Cuando `countdownShadow === 'off'`, no se aplica nada.
+   */
+  countdownShadow: ToggleMode;
+  countdownShadowColor: string;
+  countdownShadowBlur: number;
+  countdownShadowOpacity: number;
 }
 
 export interface BestSellersConfig {
@@ -347,7 +366,15 @@ export const DEFAULT_HOME_CONFIG: HomeConfig = {
     coverFrom: '#FF5C8A',
     coverTo: '#7C3AED',
     coverOpacity: 100,
-    blob1Color: '#FFD23F'
+    blob1Color: '#FFD23F',
+    titleShadow: 'off',
+    titleShadowColor: '#000000',
+    titleShadowBlur: 12,
+    titleShadowOpacity: 50,
+    countdownShadow: 'off',
+    countdownShadowColor: '#000000',
+    countdownShadowBlur: 16,
+    countdownShadowOpacity: 40
   },
   bestSellers: {
     eyebrow: 'Catálogo',

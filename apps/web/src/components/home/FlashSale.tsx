@@ -27,9 +27,20 @@ function useCountdown(seedSeconds: number) {
   ];
 }
 
-function CountdownUnit({ value, label }: { value: string; label: string }) {
+function CountdownUnit({
+  value,
+  label,
+  shadow
+}: {
+  value: string;
+  label: string;
+  shadow?: string;
+}) {
   return (
-    <div className="min-w-12 sm:min-w-16 px-2 py-2 sm:px-3.5 sm:py-3 rounded-md text-white text-center bg-white/15 backdrop-blur border border-white/25">
+    <div
+      className="min-w-12 sm:min-w-16 px-2 py-2 sm:px-3.5 sm:py-3 rounded-md text-white text-center bg-white/15 backdrop-blur border border-white/25"
+      style={shadow ? { boxShadow: shadow } : undefined}
+    >
       <div className="font-display font-bold text-xl sm:text-3xl tracking-tight leading-none tabular-nums">
         {value}
       </div>
@@ -38,6 +49,16 @@ function CountdownUnit({ value, label }: { value: string; label: string }) {
       </div>
     </div>
   );
+}
+
+/** Convierte hex (`#RRGGBB`) + alpha (0-1) a `rgba(...)`. */
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace('#', '');
+  if (h.length !== 6) return `rgba(0,0,0,${alpha})`;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 /** FlashSale — banner de oferta con countdown + tarjetas en oferta. */
@@ -68,6 +89,23 @@ export function FlashSale({
     Math.min(100, Math.max(0, config.coverOpacity)) / 100;
   const imageAlpha =
     Math.min(100, Math.max(0, config.bgImageOpacity)) / 100;
+
+  // Sombras opcionales — undefined cuando están en 'off' para no inyectar
+  // estilos vacíos en el DOM.
+  const titleShadowCss =
+    config.titleShadow === 'on'
+      ? `0 4px ${config.titleShadowBlur}px ${hexToRgba(
+          config.titleShadowColor,
+          Math.min(100, Math.max(0, config.titleShadowOpacity)) / 100
+        )}`
+      : undefined;
+  const countdownShadowCss =
+    config.countdownShadow === 'on'
+      ? `0 8px ${config.countdownShadowBlur}px ${hexToRgba(
+          config.countdownShadowColor,
+          Math.min(100, Math.max(0, config.countdownShadowOpacity)) / 100
+        )}`
+      : undefined;
 
   return (
     <section className="py-12 sm:py-16">
@@ -106,20 +144,23 @@ export function FlashSale({
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 text-accent font-mono text-[11px] tracking-widest uppercase font-semibold">
                 <Icon name="bolt" size={13} strokeWidth={2.4} /> {config.badge}
               </span>
-              <h2 className="mt-3 sm:mt-4 font-display font-bold leading-[0.95] tracking-[-0.035em] text-white text-3xl sm:text-5xl lg:text-[clamp(32px,5vw,56px)]">
+              <h2
+                className="mt-3 sm:mt-4 font-display font-bold leading-[0.95] tracking-[-0.035em] text-white text-3xl sm:text-5xl lg:text-[clamp(32px,5vw,56px)]"
+                style={titleShadowCss ? { textShadow: titleShadowCss } : undefined}
+              >
                 {config.title}
               </h2>
             </div>
             <div className="flex gap-2 sm:gap-3 items-center">
-              <CountdownUnit value={h} label="Horas" />
+              <CountdownUnit value={h} label="Horas" shadow={countdownShadowCss} />
               <span className="text-xl sm:text-3xl font-display font-bold opacity-60">
                 :
               </span>
-              <CountdownUnit value={m} label="Min" />
+              <CountdownUnit value={m} label="Min" shadow={countdownShadowCss} />
               <span className="text-xl sm:text-3xl font-display font-bold opacity-60">
                 :
               </span>
-              <CountdownUnit value={s} label="Seg" />
+              <CountdownUnit value={s} label="Seg" shadow={countdownShadowCss} />
             </div>
           </div>
 

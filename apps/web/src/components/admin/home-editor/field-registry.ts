@@ -421,6 +421,68 @@ export const FIELD_REGISTRY: Record<HomeSectionId, FieldDef[]> = {
       type: 'color'
     },
     {
+      path: 'flashSale.titleShadow',
+      label: 'Sombra del título — activar',
+      type: 'select',
+      options: [
+        { value: 'off', label: 'Desactivada' },
+        { value: 'on', label: 'Activada' }
+      ]
+    },
+    {
+      path: 'flashSale.titleShadowColor',
+      label: 'Sombra del título — color',
+      type: 'color',
+      showIf: { path: 'flashSale.titleShadow', equals: 'on' }
+    },
+    {
+      path: 'flashSale.titleShadowBlur',
+      label: 'Sombra del título — difuminado (px)',
+      type: 'range',
+      min: 0,
+      max: 40,
+      showIf: { path: 'flashSale.titleShadow', equals: 'on' }
+    },
+    {
+      path: 'flashSale.titleShadowOpacity',
+      label: 'Sombra del título — opacidad (%)',
+      type: 'range',
+      min: 0,
+      max: 100,
+      showIf: { path: 'flashSale.titleShadow', equals: 'on' }
+    },
+    {
+      path: 'flashSale.countdownShadow',
+      label: 'Sombra del contador — activar',
+      type: 'select',
+      options: [
+        { value: 'off', label: 'Desactivada' },
+        { value: 'on', label: 'Activada' }
+      ]
+    },
+    {
+      path: 'flashSale.countdownShadowColor',
+      label: 'Sombra del contador — color',
+      type: 'color',
+      showIf: { path: 'flashSale.countdownShadow', equals: 'on' }
+    },
+    {
+      path: 'flashSale.countdownShadowBlur',
+      label: 'Sombra del contador — difuminado (px)',
+      type: 'range',
+      min: 0,
+      max: 40,
+      showIf: { path: 'flashSale.countdownShadow', equals: 'on' }
+    },
+    {
+      path: 'flashSale.countdownShadowOpacity',
+      label: 'Sombra del contador — opacidad (%)',
+      type: 'range',
+      min: 0,
+      max: 100,
+      showIf: { path: 'flashSale.countdownShadow', equals: 'on' }
+    },
+    {
       path: 'flashSale.productIds',
       label: 'Productos en oferta',
       type: 'products'
