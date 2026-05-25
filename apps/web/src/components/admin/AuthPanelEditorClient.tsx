@@ -25,11 +25,16 @@ export function AuthPanelEditorClient({
 }) {
   const router = useRouter();
   const [form, setForm] = useState<AuthPanelConfig>(initialConfig);
+  // Snapshot del último guardado — se compara contra el form para saber si
+  // hay cambios pendientes. Al guardar, se actualiza para que el botón vuelva
+  // a su estado "limpio".
+  const [savedSnapshot, setSavedSnapshot] =
+    useState<AuthPanelConfig>(initialConfig);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const { onUploaded, onReplace, commit, rollback } = useImageCleanup();
 
-  const isDirty = JSON.stringify(form) !== JSON.stringify(initialConfig);
+  const isDirty = JSON.stringify(form) !== JSON.stringify(savedSnapshot);
 
   useEffect(() => {
     if (!isDirty) return;
@@ -53,6 +58,8 @@ export function AuthPanelEditorClient({
     try {
       await saveAuthPanelConfig(form);
       await commit(form.bgImageUrl ? [form.bgImageUrl] : []);
+      // Marca el form actual como nueva línea base — isDirty vuelve a false.
+      setSavedSnapshot(form);
       setSavedAt(new Date());
       console.log('[AUTH-PANEL] guardado');
     } catch (err) {
@@ -154,10 +161,8 @@ export function AuthPanelEditorClient({
 
           <Section title="Imagen de fondo">
             <ImageInput
-              value={form.bgImageUrl ?? ''}
-              onChange={(url) =>
-                setForm((f) => ({ ...f, bgImageUrl: url || undefined }))
-              }
+              value={form.bgImageUrl}
+              onChange={(url) => update('bgImageUrl', url)}
               onUploaded={onUploaded}
               onReplace={onReplace}
               hint="Opcional. Si no se sube, solo se ve la capa de color."

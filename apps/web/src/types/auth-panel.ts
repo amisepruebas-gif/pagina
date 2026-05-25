@@ -11,8 +11,11 @@
 export type PanelCoverType = 'gradient' | 'solid';
 
 export interface AuthPanelConfig {
-  /** Imagen de fondo opcional. Si está vacía, solo se ve la capa de color. */
-  bgImageUrl?: string;
+  /**
+   * Imagen de fondo. String vacío = sin imagen (en vez de undefined,
+   * porque Firestore rechaza undefined en setDoc).
+   */
+  bgImageUrl: string;
   /** Opacidad de la imagen, 0–100 (solo aplica si hay imagen). */
   bgImageOpacity: number;
   /**
@@ -42,6 +45,7 @@ export interface AuthPanelConfig {
  * desde el editor.
  */
 export const DEFAULT_AUTH_PANEL_CONFIG: AuthPanelConfig = {
+  bgImageUrl: '',
   bgImageOpacity: 100,
   coverType: 'gradient',
   coverFrom: '#FF5C8A',

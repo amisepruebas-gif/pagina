@@ -54,7 +54,7 @@ export function AuthLayout({ title, subtitle, children, footer, panel }: AuthLay
         >
           {hasBg && (
             <Image
-              src={panel!.bgImageUrl!}
+              src={panel!.bgImageUrl}
               alt=""
               fill
               sizes="(max-width: 768px) 0px, 50vw"
