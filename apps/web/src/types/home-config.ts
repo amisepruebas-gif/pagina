@@ -178,6 +178,25 @@ export interface NewsletterConfig {
   placeholder: string;
   ctaLabel: string;
   note: string;
+  /** Imagen de fondo opcional. */
+  bgImageUrl?: string;
+  /** Opacidad de la imagen, 0–100 (solo aplica si hay imagen). */
+  bgImageOpacity: number;
+  /**
+   * Capa de color sobre el banner. Si hay imagen, va encima atenuándola;
+   * si no, ES el fondo de la sección.
+   */
+  coverType: PromoCoverType;
+  coverFrom: string;
+  coverTo: string;
+  /** Opacidad de la capa, 0–100. */
+  coverOpacity: number;
+  /** Mancha decorativa izquierda. */
+  blob1Color: string;
+  blob1Opacity: number;
+  /** Mancha decorativa derecha. */
+  blob2Color: string;
+  blob2Opacity: number;
 }
 
 /**
@@ -343,7 +362,16 @@ export const DEFAULT_HOME_CONFIG: HomeConfig = {
       'Suscríbete y recibe primero las ofertas y novedades del catálogo.',
     placeholder: 'tu@email.com',
     ctaLabel: 'Suscribirme',
-    note: 'Sin spam. Cancela cuando quieras.'
+    note: 'Sin spam. Cancela cuando quieras.',
+    bgImageOpacity: 100,
+    coverType: 'gradient',
+    coverFrom: '#FFFFFF',
+    coverTo: '#FFFFFF',
+    coverOpacity: 0,
+    blob1Color: '#FF5C8A',
+    blob1Opacity: 55,
+    blob2Color: '#7C3AED',
+    blob2Opacity: 35
   },
   modules: [],
   layout: HOME_NATIVE_BLOCKS.map((ref) => ({ ref, visible: true }))

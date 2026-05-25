@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button, Icon, Input } from '@/components/ui';
 import type { NewsletterConfig } from '@/types/home-config';
 
@@ -8,20 +9,51 @@ export function Newsletter({ config }: { config: NewsletterConfig }) {
   const [email, setEmail] = useState('');
   const [done, setDone] = useState(false);
 
+  const hasBg = !!config.bgImageUrl;
+  const coverBg =
+    config.coverType === 'gradient'
+      ? `linear-gradient(120deg, ${config.coverFrom}, ${config.coverTo})`
+      : config.coverFrom;
+  const coverAlpha = Math.min(100, Math.max(0, config.coverOpacity)) / 100;
+  const imageAlpha =
+    Math.min(100, Math.max(0, config.bgImageOpacity)) / 100;
+  const blob1Alpha = Math.min(100, Math.max(0, config.blob1Opacity)) / 100;
+  const blob2Alpha = Math.min(100, Math.max(0, config.blob2Opacity)) / 100;
+
   return (
-    <section className="py-14 sm:py-24 relative overflow-hidden">
-      <span
+    <section
+      className="py-14 sm:py-24 relative overflow-hidden"
+      style={hasBg ? { backgroundColor: '#FFFFFF' } : undefined}
+    >
+      {hasBg && (
+        <Image
+          src={config.bgImageUrl!}
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover"
+          style={{ opacity: imageAlpha }}
+        />
+      )}
+
+      <div
         aria-hidden
-        className="pointer-events-none absolute top-[20%] -left-32 size-[500px] rounded-full opacity-55 blur-[60px]"
-        style={{ background: 'var(--grad-from)' }}
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute top-[10%] -right-28 size-[420px] rounded-full opacity-35 blur-[60px]"
-        style={{ background: 'var(--secondary)' }}
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: coverBg, opacity: coverAlpha }}
       />
 
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 relative">
+      <span
+        aria-hidden
+        className="pointer-events-none absolute top-[20%] -left-32 size-[500px] rounded-full blur-[60px]"
+        style={{ background: config.blob1Color, opacity: blob1Alpha }}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute top-[10%] -right-28 size-[420px] rounded-full blur-[60px]"
+        style={{ background: config.blob2Color, opacity: blob2Alpha }}
+      />
+
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 relative z-10">
         <div
           className="max-w-2xl mx-auto text-center bg-surface rounded-2xl
                      p-8 sm:p-12 lg:p-16 border border-border shadow-md"

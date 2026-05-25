@@ -456,6 +456,70 @@ export const FIELD_REGISTRY: Record<HomeSectionId, FieldDef[]> = {
       type: 'text'
     },
     { path: 'newsletter.ctaLabel', label: 'Botón — texto', type: 'text' },
-    { path: 'newsletter.note', label: 'Nota inferior', type: 'text' }
+    { path: 'newsletter.note', label: 'Nota inferior', type: 'text' },
+    {
+      path: 'newsletter.bgImageUrl',
+      label: 'Imagen de fondo (opcional)',
+      type: 'image'
+    },
+    {
+      path: 'newsletter.bgImageOpacity',
+      label: 'Imagen — opacidad (%)',
+      type: 'range',
+      min: 0,
+      max: 100,
+      showIf: { path: 'newsletter.bgImageUrl', truthy: true }
+    },
+    {
+      path: 'newsletter.coverType',
+      label: 'Capa — tipo',
+      type: 'select',
+      options: [
+        { value: 'gradient', label: 'Gradiente (2 colores)' },
+        { value: 'solid', label: 'Color sólido' }
+      ]
+    },
+    {
+      path: 'newsletter.coverFrom',
+      label: 'Capa — color inicial / sólido',
+      type: 'color'
+    },
+    {
+      path: 'newsletter.coverTo',
+      label: 'Capa — color final',
+      type: 'color',
+      showIf: { path: 'newsletter.coverType', equals: 'gradient' }
+    },
+    {
+      path: 'newsletter.coverOpacity',
+      label: 'Capa — opacidad (%)',
+      type: 'range',
+      min: 0,
+      max: 100
+    },
+    {
+      path: 'newsletter.blob1Color',
+      label: 'Mancha decorativa — izquierda',
+      type: 'color'
+    },
+    {
+      path: 'newsletter.blob1Opacity',
+      label: 'Mancha izquierda — opacidad (%)',
+      type: 'range',
+      min: 0,
+      max: 100
+    },
+    {
+      path: 'newsletter.blob2Color',
+      label: 'Mancha decorativa — derecha',
+      type: 'color'
+    },
+    {
+      path: 'newsletter.blob2Opacity',
+      label: 'Mancha derecha — opacidad (%)',
+      type: 'range',
+      min: 0,
+      max: 100
+    }
   ]
 };
