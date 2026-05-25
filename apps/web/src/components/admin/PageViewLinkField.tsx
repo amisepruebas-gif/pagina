@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Icon } from '@/components/ui';
+import { TextInput } from './home-editor/editor-widgets';
 import PageViewPickerModal from './PageViewPickerModal';
 
 interface Props {
@@ -25,24 +26,23 @@ export default function PageViewLinkField({
   const [open, setOpen] = useState(false);
 
   // Extrae el slug si el valor actual ya apunta a /v/<slug>; el picker lo
-  // usa para preseleccionar la vista al abrir.
+  // usa para preseleccionar la vista al abrir. Tolera espacios y trailing
+  // slash que un admin pudo dejar al escribir a mano.
   const currentSlug = value.startsWith('/v/')
-    ? value.slice(3).split(/[?#]/)[0] || null
+    ? value.slice(3).split(/[?#]/)[0].trim().replace(/\/+$/, '') || null
     : null;
 
   return (
     <div className="flex flex-col gap-1.5">
-      <input
-        type="text"
+      <TextInput
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
         placeholder={placeholder ?? '/'}
-        className="rounded-md border border-gray-300 bg-white px-3 py-2 text-[13px] focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
       />
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border-strong bg-surface px-3 py-2 text-[12px] font-display font-semibold text-text transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700"
+        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border-strong bg-surface px-3 py-2 text-[12px] font-display font-semibold text-text transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700"
       >
         <Icon name="grid" size={13} strokeWidth={2.2} />
         Seleccionar página creada

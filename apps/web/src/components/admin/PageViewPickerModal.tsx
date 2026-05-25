@@ -27,25 +27,27 @@ export default function PageViewPickerModal({
   onConfirm
 }: PageViewPickerModalProps) {
   const [views, setViews] = useState<PageView[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
+  // Re-fetch cada vez que el modal se abre: si el admin acaba de crear una
+  // vista en otra pestaña, queremos verla sin recargar el editor.
   useEffect(() => {
-    if (!open || loaded) return;
+    if (!open) return;
+    setLoading(true);
     getPageViews()
       .then((list) => {
         setViews(list);
-        setLoaded(true);
       })
       .catch((err) => {
         console.error('[PageViewPickerModal]', err);
-        setLoaded(true);
-      });
-  }, [open, loaded]);
+      })
+      .finally(() => setLoading(false));
+  }, [open]);
 
   // Cada vez que se abre, sincroniza el pick inicial con el slug actual.
   useEffect(() => {
@@ -128,7 +130,7 @@ export default function PageViewPickerModal({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          {!loaded ? (
+          {loading ? (
             <p className="py-12 text-center text-sm text-text-soft">
               Cargando vistas…
             </p>

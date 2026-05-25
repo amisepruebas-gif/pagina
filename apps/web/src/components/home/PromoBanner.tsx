@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Badge, Button, ProductImage } from '@/components/ui';
 import type { PromoBannerConfig } from '@/types/home-config';
+import { safeHref } from '@/lib/safe-href';
 
 /** Posición y proporción de cada una de las 2 tarjetas del banner. */
 const PROMO_CARD_SLOTS = [
@@ -92,7 +93,7 @@ export function PromoBanner({ config }: { config: PromoBannerConfig }) {
                 {config.paragraph}
               </p>
               <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row gap-3">
-                <Link href={config.primaryCta.href} className="w-full sm:w-auto">
+                <Link href={safeHref(config.primaryCta.href)} className="w-full sm:w-auto">
                   <Button
                     size="lg"
                     variant="secondary"
@@ -103,7 +104,7 @@ export function PromoBanner({ config }: { config: PromoBannerConfig }) {
                     {config.primaryCta.label}
                   </Button>
                 </Link>
-                <Link href={config.secondaryCta.href} className="w-full sm:w-auto">
+                <Link href={safeHref(config.secondaryCta.href)} className="w-full sm:w-auto">
                   <Button
                     size="lg"
                     variant="ghost"
