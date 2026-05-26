@@ -22,3 +22,6 @@ coverage/
 .vercel
 
 .vercel
+
+# Plan generado por scripts/dedupe-product-slugs.mjs — artefacto efímero
+apps/web/scripts/dedupe-plan.json

@@ -6,6 +6,7 @@ import {
   createProduct,
   updateProduct,
   syncProductImages,
+  DuplicateFieldError,
   type ProductFormValues
 } from '@/lib/admin/products-admin';
 import type { Category } from '@/types/category';
@@ -94,6 +95,11 @@ export default function ProductForm({
   };
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dupError, setDupError] = useState<{
+    field: 'slug' | 'sku';
+    conflictingName: string;
+    suggestion: string;
+  } | null>(null);
   const [success, setSuccess] = useState(false);
   const [touched, setTouched] = useState(false);
   const imageCleanup = useImageCleanup();
@@ -114,6 +120,11 @@ export default function ProductForm({
   ) {
     setValues((v) => ({ ...v, [key]: val }));
     setTouched(true);
+    // Al editar slug/sku tras un conflicto, retiro el aviso para no
+    // dejar la sugerencia vieja apuntando a un valor que ya cambió.
+    if (dupError && (key === 'slug' || key === 'sku') && key === dupError.field) {
+      setDupError(null);
+    }
   }
 
   // Subcategorías filtradas por la categoría actualmente seleccionada
@@ -142,6 +153,7 @@ export default function ProductForm({
 
   async function handleSubmit() {
     setError(null);
+    setDupError(null);
     setSuccess(false);
     setSubmitting(true);
     try {
@@ -198,13 +210,21 @@ export default function ProductForm({
       }
     } catch (err) {
       console.error('[ADMIN] error guardando producto:', err);
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(
-        msg.includes('PERMISSION_DENIED') ||
-          msg.includes('insufficient permissions')
-          ? 'Permiso denegado. Verifica que tu usuario tiene role=admin en users/{tu-uid}.'
-          : `Error: ${msg}`
-      );
+      if (err instanceof DuplicateFieldError) {
+        setDupError({
+          field: err.field,
+          conflictingName: err.conflictingName,
+          suggestion: err.suggestion
+        });
+      } else {
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(
+          msg.includes('PERMISSION_DENIED') ||
+            msg.includes('insufficient permissions')
+            ? 'Permiso denegado. Verifica que tu usuario tiene role=admin en users/{tu-uid}.'
+            : `Error: ${msg}`
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -454,12 +474,38 @@ export default function ProductForm({
         />
       </FormSection>
 
-      {error && (
+      {dupError && (
+        <div className="mt-4 px-4 py-3 rounded-md bg-amber-50 border border-amber-300 text-amber-900 text-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="flex-1">
+            <p>
+              Ya existe el producto{' '}
+              <span className="font-semibold">«{dupError.conflictingName}»</span>{' '}
+              con ese {dupError.field === 'slug' ? 'slug' : 'SKU'}. Elige otro
+              valor para que no se pisen.
+            </p>
+            <p className="mt-1 text-amber-800">
+              Sugerencia libre:{' '}
+              <span className="font-mono">{dupError.suggestion}</span>
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setField(dupError.field, dupError.suggestion);
+              setDupError(null);
+            }}
+            className="shrink-0 rounded-md bg-amber-500 text-white px-3 py-1.5 text-xs font-semibold hover:bg-amber-600 transition"
+          >
+            Usar sugerencia
+          </button>
+        </div>
+      )}
+      {error && !dupError && (
         <div className="mt-4 px-4 py-3 rounded-md bg-error/[0.12] border border-error/30 text-error text-sm">
           {error}
         </div>
       )}
-      {success && !error && (
+      {success && !error && !dupError && (
         <div className="mt-4 px-4 py-3 rounded-md bg-success/[0.12] border border-success/30 text-success text-sm">
           Cambios guardados correctamente.
         </div>
