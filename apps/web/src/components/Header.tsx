@@ -7,7 +7,7 @@ import CategoryNav from './CategoryNav';
 
 export default function Header() {
   return (
-    <header className="bg-surface border-b border-border sticky top-0 z-40">
+    <header className="bg-surface border-b border-border sticky top-[var(--demo-banner-h,0px)] z-40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3 md:gap-6">
         <MobileMenuButton />
 
