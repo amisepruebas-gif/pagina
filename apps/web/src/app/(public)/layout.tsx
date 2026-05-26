@@ -1,3 +1,4 @@
+import DemoBanner from '@/components/DemoBanner';
 import Topbar from '@/components/Topbar';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -10,6 +11,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <a href="#contenido" className="skip-link">
         Saltar al contenido
       </a>
+      <DemoBanner />
       <Topbar />
       <Header />
       <main id="contenido" className="min-h-[60vh]">
