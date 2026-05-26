@@ -6,6 +6,7 @@ import {
   updateProfile,
   signOut as fbSignOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   type User
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -50,7 +51,20 @@ export async function registerWithEmail(
     await updateProfile(cred.user, { displayName: displayName.trim() });
   }
   await ensureUserDoc(cred.user);
+  // Verificación de correo: el fallo aquí no debe abortar el registro,
+  // el usuario puede reenviar desde el banner de /mi-cuenta.
+  try {
+    await sendEmailVerification(cred.user);
+    console.log('[AUTH] verification email sent to', cred.user.email);
+  } catch (err) {
+    console.warn('[AUTH] could not send verification email', err);
+  }
   return cred.user;
+}
+
+export async function resendVerificationEmail(user: User) {
+  await sendEmailVerification(user);
+  console.log('[AUTH] verification email re-sent to', user.email);
 }
 
 export async function loginWithEmail(email: string, password: string) {

@@ -9,6 +9,7 @@ import PedidosTab from '@/components/account/PedidosTab';
 import FavoritosTab from '@/components/account/FavoritosTab';
 import DireccionesTab from '@/components/account/DireccionesTab';
 import QuejasTab from '@/components/account/QuejasTab';
+import { EmailVerificationBanner } from '@/components/auth/EmailVerificationBanner';
 
 const VALID_TABS: AccountTab[] = ['perfil', 'pedidos', 'favoritos', 'direcciones', 'quejas'];
 
@@ -47,6 +48,8 @@ function MiCuentaInner() {
           Hola{profile?.displayName ? `, ${profile.displayName}` : ''}.
         </p>
       </header>
+
+      <EmailVerificationBanner />
 
       <AccountTabs current={tab} />
 
